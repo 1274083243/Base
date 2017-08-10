@@ -1182,6 +1182,32 @@ list.add(4);	//3 结果是什么？为什么？
 
 3 当然可以正常运行咯，不可变结构的 Arrays 的 ArraList 通过构造放入了真正的万能 ArraList，自然就可以操作咯。
 
+### **23.解释一下 ArrayList、Vector、Stack、LinkedList 的实现和区别及特点和适用场景？**
+
+解析：
+
+算法复杂度等等角度
+
+JDK 有几种有序集合java.util.List的实现方法，三个最熟悉的是Vector, ArrayList和LinkedList. 在Java性能方面问的比较多的就是这三个List的性能区别。
+
+Vector和ArrayList都是基于储存元素的Object[] array来实现的，是根据索引来访问元素。Vector和ArrayList最大的区别就是synchronization(同步)的使用， 抛开两个只在序列化过程中使用的方法不说，没有一个ArrayList的方法是同步的，相反，绝大多数Vector的方法法都是直接或者间接的同步的，因 此，Vector是线程安全的而ArrayList不是，这样就造成ArrayList比Vector更快些，不过在最新的JVM中，这两个类的速度差别 是很小的，几乎可以忽略不计。
+
+Vector和ArrayList的实现在索引访问和元素更新方面有着非常优秀的性能，因为不需要花费精力做范围检查（Range Checking）,所以从Lise的末端添加元素，删除元素也有着非常优秀的性能，除非List的存储容量不足而需要扩展内部数组的长度，这种情况下插 入和删除数据需要一个数组的拷贝（当内部数组需要扩展的时候需要两次拷贝），需要拷贝的元素数量是List的长度减去索引号（也就是要插入和删除的索引号 与整个List的最后一个索引号），对插入来讲，插入元素到List的第一个位子的性能最差，插入到最后一个位子的性能最好，数组拷贝所需的时间会根据元 素的数量增加而显著增加。
+
+LinkedList的实现
+
+LinkedList是用双向链接节点的List实现的，根据索引访问元素的时候，你需要访问所有的节点只到到达你要的那个索引节点。往LinkedList插入元素是很简单的，只需要到达索引节点直接在这个节点前插入一个节点。
+
+LinkedList的实现使根据索引访问元素和更新元素性能不如ArrayList和Vector好，因为你需要访问很多的节点才能到达你所要的那个节点。插入元素和删除元素跟插入和删除节点距list末端的距离有最大关系。
+
+性能对比：
+
+对较短的List来讲，ArrayList和Vector的性能非常接近，如果你只需要一个定长的List,Java数组（Ojbect[]）的性能超过其他任何list类型。
+
+整体来讲，ArrayList在绝大多数情况下都有着更好的性能，包括根据索引插入元素，或者插入到随即的位子，如果总是要插入数据到List的最前端，LinkedList的性能最好，但是你应该可以用反ArrayList得到更好的性能.
+
+
+
 http://www.jfox.info/40-ge-java-ji-he-lei-mian-shi-ti-he-da-an.html
 http://www.importnew.com/22083.html
 http://www.importnew.com/22087.html
