@@ -74,11 +74,11 @@ List<String>[] list = new List<String>[3];
 **结果：**
 
 存在。
-  
+
 **原因：**
 
 数值 `NaN` 代表 not a number，无法用于比较，例如即使是 `i = Double.NaN; j = i;` 最后 `i == j` 的结果依旧为 false。
-  
+
 考察点：Java NaN。
 
 ### **5.下面程序的运行结果是什么？**
@@ -140,7 +140,7 @@ Thread-0 this is 1
 3．Object sobj = new Object();   
 4．sobj = new Object();   
 ```
- 	
+
 6.3
 ```java
 1．Object aobj = new Object ( ) ;   
@@ -153,7 +153,7 @@ Thread-0 this is 1
 ```
 
 **结果及原因：**
- 
+
 6-1、第 3 行。因为第 3 行的 fobj 被赋了新值，产生了一个新的对象，即换了一块新的内存空间，也相当于为第 1 行中的 fobj 断开了引用，这种类型的题是最简单的。 
 
 6-2、第 2、4 行。因为第 2 行为 sobj 赋值为 null，所以在此第 1 行的 sobj 符合垃圾收集器的收集标准。而第 4 行相当于为 sobj 赋值为 null，所以在此第 3 行的 sobj 也符合垃圾收集器的收集标准。 
@@ -413,7 +413,7 @@ end
 
 ### **13.内部类你知多少？**
 java 内部类分为几种，各种自己有哪些特性？
- 
+
 **结果：**
 
 静态内部类，成员内部类，方法内部类，匿名内部类；
@@ -762,7 +762,7 @@ String string = new ArrayList<String>().get(0); // 返回类型就是 String
 
 ArrayList<String> arrayList4 = new ArrayList<Object>();	// 编译错误  
 ArrayList<Object> arrayList5 = new ArrayList<String>();	// 编译错误  
-```	
+```
 
 解释：
 
@@ -857,7 +857,7 @@ class Bean<T super Student> { //TODO }	//4
 解答：
 
 1 编译时报错，不能实例化泛型类型，类型擦除会使这个操作做成 new Object()。
-  
+
 2 编译时报错，不能创建泛型数组，擦除会使这个方法构造一个 Object[2] 数组。
 
 3 可以运行，可以用反射构造泛型对象和数组。
@@ -1014,7 +1014,7 @@ public void copyTo(DynamicArray<? super E> dest){
 
 解析：
 
-当在 ArrayList 中增加一个对象时 Java 会去检查 Arraylist 以确保已存在的数组中有足够的容量来存储这个新对象，如果没有足够容量就新建一个长度更长的数组（原来的1.5倍），旧的数组就会使用 Arrays.copyOf 方法被复制到新的数组中去，现有的数组引用指向了新的数组。下面代码展示为 `Java 1.8` 中通过 `ArraList.add` 方法添加元素时，内部会自动扩容，扩容流程如下：
+当在 ArrayList 中增加一个对象时 Java 会去检查 Arraylist 以确保已存在的数组中有足够的容量来存储这个新对象，如果没有足够容量就新建一个长度更长的数组（原来的1.5倍），旧的数组就会使用 Arrays.copyOf 方法被复制到新的数组中去，现有的数组引用指向了新的数组。下面代码展示为 `Java 1.8` 中通过 `ArrayList.add` 方法添加元素时，内部会自动扩容，扩容流程如下：
 ```java
 //确保容量够用，内部会尝试扩容，如果需要
 ensureCapacityInternal(size + 1)
@@ -1156,7 +1156,7 @@ private class Itr implements Iterator<E> {
 
 ### **22.简要解释下面程序的执行现象和结果？**
 ```java
-ArraList<Integer> list = new ArrayList<Integer>();
+ArrayList<Integer> list = new ArrayList<Integer>();
 list.add(1);
 list.add(2);
 list.add(3);
@@ -1170,7 +1170,7 @@ List<Integer> list = Arrays.asList(array);
 list.add(4);	//2 结果是什么？为什么？
 
 Integer[] array = {1, 2, 3};
-List<Integer> list = new ArraList<Integer>(Arrays.asList(array));
+List<Integer> list = new ArrayList<Integer>(Arrays.asList(array));
 list.add(4);	//3 结果是什么？为什么？
 ```
 
@@ -1178,9 +1178,9 @@ list.add(4);	//3 结果是什么？为什么？
 
 1 输出为 true，因为 ArrayList 有两个方法可以返回数组`Object[] toArray()`和`<T> T[] toArray(T[] a)`，第一个方法返回的数组是通过 Arrays.copyOf 实现的，第二个方法如果参数数组长度足以容纳所有元素就使用参数数组，否则新建一个数组返回，所以结果为 true。
 
-2 会抛出 UnsupportedOperationException 异常，因为 Arrays 的 asList 方法返回的是一个 Arrays 内部类的 ArraList 对象，这个对象没有实现 add、remove 等方法，只实现了 set 等方法，所以通过 Arrays.asList 转换的列表不具备结构可变性。
+2 会抛出 UnsupportedOperationException 异常，因为 Arrays 的 asList 方法返回的是一个 Arrays 内部类的 ArrayList 对象，这个对象没有实现 add、remove 等方法，只实现了 set 等方法，所以通过 Arrays.asList 转换的列表不具备结构可变性。
 
-3 当然可以正常运行咯，不可变结构的 Arrays 的 ArraList 通过构造放入了真正的万能 ArraList，自然就可以操作咯。
+3 当然可以正常运行咯，不可变结构的 Arrays 的 ArrayList 通过构造放入了真正的万能 ArrayList，自然就可以操作咯。
 
 ### **23.解释一下 ArrayList、Vector、Stack、LinkedList 的实现和区别及特点和适用场景？**
 
