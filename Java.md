@@ -1265,9 +1265,19 @@ Comparable 对实现它的每个类的对象进行整体排序，这个接口需
 若一个类实现了 Comparable 接口就意味着该类支持排序，而 Comparator 是比较器，我们若需要控制某个类的次序，可以建立一个该类的比较器来进行排序。
 Comparable 比较固定，和一个具体类相绑定，而 Comparator 比较灵活，可以被用于各个需要比较功能的类使用。
 
-### **28.。。。。。。**
+### **28.简单说说 Iterator 和 ListIterator 的区别？**
 
+解析：
 
+ListIterator 有 add() 方法，可以向 List 中添加对象，而 Iterator 不能。
+
+ListIterator 和 Iterator 都有 hasNext() 和 next() 方法，可以实现顺序向后遍历，但是 ListIterator 有 hasPrevious() 和 previous() 方法，可以实现逆向（顺序向前）遍历，Iterator 就不可以。
+
+ListIterator 可以定位当前的索引位置，通过 nextIndex() 和 previousIndex() 可以实现，Iterator 没有此功能。
+
+都可实现删除对象，但是 ListIterator 可以实现对象的修改，通过 set() 方法可以实现，Iierator 仅能遍历，不能修改。
+
+### **29.。。。。。**
 
 http://www.jfox.info/40-ge-java-ji-he-lei-mian-shi-ti-he-da-an.html
 http://www.importnew.com/22083.html
