@@ -1195,26 +1195,21 @@ java.util.Collections 是一个包装类，它包含有各种有关集合操作�
 
 解析：
 
-算法复杂度等等角度
+首先他们都是 List 家族的儿子，List 又是 Collection 的子接口，Collection 又是 Iterable 的子接口，所以他们都具备 Iterable 和 Collection 和 List 的基本特性。
 
-JDK 有几种有序集合java.util.List的实现方法，三个最熟悉的是Vector, ArrayList和LinkedList. 在Java性能方面问的比较多的就是这三个List的性能区别。
+ArrayList 是一个动态数组队列，随机访问效率高，随机插入、删除效率低。LinkedList 是一个双向链表，它也可以被当作堆栈、队列或双端队列进行操作，随机访问效率低，但随机插入、随机删除效率略好。Vector 是矢量队列，和 ArrayList 一样是一个动态数组，但是 Vector 是线程安全的。Stack 继承于 Vector，特性是先进后出(FILO, FirstIn Last Out)。
 
-Vector和ArrayList都是基于储存元素的Object[] array来实现的，是根据索引来访问元素。Vector和ArrayList最大的区别就是synchronization(同步)的使用， 抛开两个只在序列化过程中使用的方法不说，没有一个ArrayList的方法是同步的，相反，绝大多数Vector的方法法都是直接或者间接的同步的，因 此，Vector是线程安全的而ArrayList不是，这样就造成ArrayList比Vector更快些，不过在最新的JVM中，这两个类的速度差别 是很小的，几乎可以忽略不计。
+从线程安全角度看 Vector、Stack 是线程安全的，ArrayList、LinkedList 是非线程安全的。
 
-Vector和ArrayList的实现在索引访问和元素更新方面有着非常优秀的性能，因为不需要花费精力做范围检查（Range Checking）,所以从Lise的末端添加元素，删除元素也有着非常优秀的性能，除非List的存储容量不足而需要扩展内部数组的长度，这种情况下插 入和删除数据需要一个数组的拷贝（当内部数组需要扩展的时候需要两次拷贝），需要拷贝的元素数量是List的长度减去索引号（也就是要插入和删除的索引号 与整个List的最后一个索引号），对插入来讲，插入元素到List的第一个位子的性能最差，插入到最后一个位子的性能最好，数组拷贝所需的时间会根据元 素的数量增加而显著增加。
+从实现角度看 LinkedList 是双向链表结构，ArrayList、Vector、Stack 是内存数组结构。
 
-LinkedList的实现
+从动态扩容角度看由于 ArrayList 和 Vector（Stack 继承自 Vector，只在 Vector 的基础上添加了几个 Stack 相关的方法，故之后不再对 Stack 做特别的说明）使用数组实现，当数组长度不够时，其内部会创建一个更大的数组，然后将原数组中的数据拷贝至新数组中，而 LinkedList 是双向链表结构，内存不用连续，所以用多少申请多少。
 
-LinkedList是用双向链接节点的List实现的，根据索引访问元素的时候，你需要访问所有的节点只到到达你要的那个索引节点。往LinkedList插入元素是很简单的，只需要到达索引节点直接在这个节点前插入一个节点。
+从效率方面来说 Vector、ArrayList、Stack 是基于数组实现的，是根据索引来访问元素，Vector（Stack）和 ArrayList 最大的区别就是 synchronization 同步的使用，抛开两个只在序列化过程中使用的方法不说，没有一个 ArrayList 的方法是同步的，相反，绝大多数 Vector（Stack）的方法法都是直接或者间接的同步的，因此就造成 ArrayList 比 Vector（Stack）更快些，不过在最新的 JVM 中，这两个类的速度差别是很小的，几乎可以忽略不计；而 LinkedList 是双向链表实现，根据索引访问元素时需要遍历寻找，性能略差。
 
-LinkedList的实现使根据索引访问元素和更新元素性能不如ArrayList和Vector好，因为你需要访问很多的节点才能到达你所要的那个节点。插入元素和删除元素跟插入和删除节点距list末端的距离有最大关系。
+从差异角度看 LinkedList 还具备 Deque 双端队列的特性，其实现了 Deque 接口，Deque 继承自 Queue 队列接口，其实也挺好理解，因为 LinkedList 是的实现是双向链表结构，所以实现队列特性实在是太容易了。
 
-性能对比：
-
-对较短的List来讲，ArrayList和Vector的性能非常接近，如果你只需要一个定长的List,Java数组（Ojbect[]）的性能超过其他任何list类型。
-
-整体来讲，ArrayList在绝大多数情况下都有着更好的性能，包括根据索引插入元素，或者插入到随即的位子，如果总是要插入数据到List的最前端，LinkedList的性能最好，但是你应该可以用反ArrayList得到更好的性能.
-
+### **25.简单介绍下 List 、Map、Set 的区别和关系？**
 
 
 http://www.jfox.info/40-ge-java-ji-he-lei-mian-shi-ti-he-da-an.html
