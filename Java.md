@@ -1182,7 +1182,16 @@ list.add(4);	//3 结果是什么？为什么？
 
 3 当然可以正常运行咯，不可变结构的 Arrays 的 ArrayList 通过构造放入了真正的万能 ArrayList，自然就可以操作咯。
 
-### **23.解释一下 ArrayList、Vector、Stack、LinkedList 的实现和区别及特点和适用场景？**
+### **23.简单解释一下 Collection 和 Collections 的区别？**
+
+解析：
+
+java.util.Collection 是一个集合接口，它提供了对集合对象进行基本操作的通用接口方法，在 Java 类库中有很多具体的实现，意义是为各种具体的集合提供最大化的统一操作方式。
+譬如 Collection 的实现类有 List、Set 等，List 的实现类有 LinkedList、ArrayList、Vector 等，Vector 的实现类有 Stack 等，不过切记 Map 是自立门户的，其提供了转换为 Collection 的方法，但是自己不是 Collection 的子类。
+ 
+java.util.Collections 是一个包装类，它包含有各种有关集合操作的静态多态方法，此类构造 private 不能实例化，就像一个工具类，服务于 Java 的 Collection 框架。
+
+### **24.解释一下 ArrayList、Vector、Stack、LinkedList 的实现和区别及特点和适用场景？**
 
 解析：
 
