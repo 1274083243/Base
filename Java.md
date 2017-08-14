@@ -1250,8 +1250,12 @@ return Entry[index];
 当我们通过 put 向 HashMap 添加多个元素时会遇到两个 key 通过`hash % Entry[].length`计算得到相同 index 的情况，这时具有相同 index 的元素就会被放在线性数组 index 位置，然后其 next 属性指向上个同 index 的 Entry 元素形成链表结构（譬如第一个键值对 A 进来，通过计算其 key 的 hash 得到的 index = 0，记做 Entry[0] = A，接着第二个键值对 B 进来，通过计算其 index 也等于 0，这时候 B.next = A, Entry[0] = B，如果又进来 C 且 index 也等于 0 则 C.next = B, Entry[0] = C）。
 当我们通过 get 从 HashMap 获取元素时首先会定位到数组元素，接着再遍历该元素处的链表获取真实元素。
 当 key 为 null 时 HashMap 特殊处理总是放在 Entry[] 数组的第一个元素。
+HashMap 使用 Key 对象的 hashCode() 和 equals() 方法去决定 key-value 对的索引，当我们试着从 HashMap 中获取值的时候，这些方法也会被用到，所以 equals() 和 hashCode() 的实现应该遵循以下规则：
+如果`o1.equals(o2)`则`o1.hashCode() == o2.hashCode()`必须为 true，或者如果`o1.hashCode() == o2.hashCode()`则不意味着o1.equals(o2)会为true。
 
 关于 HashMap 的 hash 函数算法巧妙之处可以参见本文链接：http://pengranxiang.iteye.com/blog/543893
+
+### **27.简单解释一下 Collection 和 Collections 的区别？**
 
 
 
