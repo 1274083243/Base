@@ -1255,7 +1255,17 @@ HashMap 使用 Key 对象的 hashCode() 和 equals() 方法去决定 key-value �
 
 关于 HashMap 的 hash 函数算法巧妙之处可以参见本文链接：http://pengranxiang.iteye.com/blog/543893
 
-### **27.简单解释一下 Collection 和 Collections 的区别？**
+### **27.简单解释一下 Comparable 和 Comparator 的区别和场景？**
+
+解析：
+
+Comparable 对实现它的每个类的对象进行整体排序，这个接口需要类本身去实现，若一个类实现了 Comparable 接口，实现 Comparable 接口的类的对象的 List 列表(或数组)可以通过 Collections.sort（或 Arrays.sort）进行排序，此外实现 Comparable 接口的类的对象可以用作有序映射(如TreeMap)中的键或有序集合(如TreeSet)中的元素，而不需要指定比较器，
+实现 Comparable 接口必须修改自身的类（即在自身类中实现接口中相应的方法），如果我们使用的类无法修改（如SDK中一个没有实现Comparable的类），我们又想排序，就得用到 Comparator 这个接口了（策略模式）。
+所以如果你正在编写一个值类，它具有非常明显的内在排序关系，比如按字母顺序、按数值顺序或者按年代顺序，那你就应该坚决考虑实现 Comparable 这个接口，
+若一个类实现了 Comparable 接口就意味着该类支持排序，而 Comparator 是比较器，我们若需要控制某个类的次序，可以建立一个该类的比较器来进行排序。
+Comparable 比较固定，和一个具体类相绑定，而 Comparator 比较灵活，可以被用于各个需要比较功能的类使用。
+
+### **28.。。。。。。**
 
 
 
