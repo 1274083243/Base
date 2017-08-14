@@ -1223,6 +1223,35 @@ Queue 的主要特性就是队列和元素不可空性，其主要的实现类�
 
 Map 自立门户，但是也提供了嫁接到 Collection 相关方法，其主要特性就是维护键值对关联和查找特性，其主要实现类有 HashTab、HashMap、LinkedHashMap、TreeMap。HashTab 类似 HashMap，_但是不允许键为 null 和值为 null_，比 HashMap 慢，因为为同步操作；HashMap 是基于散列列表的实现，_其键和值都可以为 null_；LinkedHashMap 类似 HashMap，_其键和值都可以为 null_，其有序性为插入顺序或者最近最少使用的次序（LRU 算法的核心就是这个）；TreeMap 是基于红黑树算法实现的，查看键值对时会被排序，存入的元素必须实现 Comparable 接口，_但是不允许键为 null，值可以为 null_。
 
+### **26.简单说说 HashMap 的底层原理？**
+
+答案：
+
+当我们往 HashMap 中 put 元素时，先根据 key 的 hash 值得到这个元素在数组中的位置（即下标），然后把这个元素放到对应的位置中，如果这个元素所在的位子上已经存放有其他元素就在同一个位子上的元素以链表的形式存放，新加入的放在链头，从 HashMap 中 get 元素时先计算 key 的 hashcode，找到数组中对应位置的某一元素，然后通过 key 的 equals 方法在对应位置的链表中找到需要的元素，所以 HashMap 的数据结构是数组和链表的结合。
+
+解析：
+
+HashMap 底层是基于哈希表的 Map 接口的非同步实现，实际是一个链表散列数据结构（即数组和链表的结合体）。
+首先由于数组存储区间是连续的，占用内存严重，故空间复杂度大，但二分查找时间复杂度小（O(1)），所以寻址容易，插入和删除困难。而链表存储区间离散，占用内存比较宽松，故空间复杂度小，但时间复杂度大（O(N)），所以寻址困难，插入和删除容易。
+所以就产生了一种新的数据结构------哈希表，哈希表既满足了数据的查找方便，同时不占用太多的内容空间，使用也十分方便，哈希表有多种不同的实现方法，HashMap 采用的是链表的数组实现方式，具体如下：
+
+首先 HashMap 里面实现了一个静态内部类 Entry(key、value、next)，HashMap 的基础就是一个 Entry[] 线性数组，Map 的内容都保存在 Entry[] 里面，而 HashMap 用的线性数组却是随机存储的原因如下：
+```java
+// 存储时
+int hash = key.hashCode(); //每个 key 的 hash 是一个固定的 int 值 
+int index = hash % Entry[].length; 
+Entry[index] = value;
+
+// 取值时
+int hash = key.hashCode(); 
+int index = hash % Entry[].length; 
+return Entry[index];
+```
+当我们通过 put 向 HashMap 添加多个元素时会遇到两个 key 通过`hash % Entry[].length`计算得到相同 index 的情况，这时具有相同 index 的元素就会被放在线性数组 index 位置，然后其 next 属性指向上个同 index 的 Entry 元素形成链表结构（譬如第一个键值对 A 进来，通过计算其 key 的 hash 得到的 index = 0，记做 Entry[0] = A，接着第二个键值对 B 进来，通过计算其 index 也等于 0，这时候 B.next = A, Entry[0] = B，如果又进来 C 且 index 也等于 0 则 C.next = B, Entry[0] = C）。
+当我们通过 get 从 HashMap 获取元素时首先会定位到数组元素，接着再遍历该元素处的链表获取真实元素。
+当 key 为 null 时 HashMap 特殊处理总是放在 Entry[] 数组的第一个元素。
+
+关于 HashMap 的 hash 函数算法巧妙之处可以参见本文链接：http://pengranxiang.iteye.com/blog/543893
 
 
 
