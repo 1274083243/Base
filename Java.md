@@ -1189,7 +1189,7 @@ list.add(4);	//3 结果是什么？为什么？
 java.util.Collection 是一个集合接口，它提供了对集合对象进行基本操作的通用接口方法，在 Java 类库中有很多具体的实现，意义是为各种具体的集合提供最大化的统一操作方式。
 譬如 Collection 的实现类有 List、Set 等，List 的实现类有 LinkedList、ArrayList、Vector 等，Vector 的实现类有 Stack 等，不过切记 Map 是自立门户的，其提供了转换为 Collection 的方法，但是自己不是 Collection 的子类。
  
-java.util.Collections 是一个包装类，它包含有各种有关集合操作的静态多态方法，此类构造 private 不能实例化，就像一个工具类，服务于 Java 的 Collection 框架。
+java.util.Collections 是一个包装类，它包含有各种有关集合操作的静态多态方法，此类构造 private 不能实例化，就像一个工具类，服务于 Java 的 Collection 框架，其提供的方法大概可以分为对容器接口对象进行操作类（查找和替换、排序和调整顺序、添加和修改）和返回一个容器接口对象类（适配器将其他类型的数据转换为容器接口对象、装饰器修饰一个给定容器接口对象增加某种性质）。
 
 ### **24.解释一下 ArrayList、Vector、Stack、LinkedList 的实现和区别及特点和适用场景？**
 
@@ -1213,15 +1213,15 @@ ArrayList 是一个动态数组队列，随机访问效率高，随机插入、�
 
 解析：
 
-List、Set、Queue 都继承自 Collection 接口，而 Map 则不是（继承自 Object）。
+List、Set、Queue 都继承自 Collection 接口，而 Map 则不是（继承自 Object），所以容器类有两个根接口，分别是 Collection 和 Map，Collection 表示单个元素的集合，Map 表示键值对的集合。
 
 List 的主要特点就是有序性和元素可空性，他维护了元素的特定顺序，其主要实现类有 ArrayList 和 LinkList。ArrayList 底层由数组实现，允许元素随机访问，但是向 ArrayList 列表中间插入删除元素需要移位复制速度略慢；LinkList 底层由双向链表实现，适合频繁向列表中插入删除元素，随机访问需要遍历所以速度略慢，适合当做堆栈、队列、双向队列使用。
 
-Set 的主要特性就是唯一性和元素可空性，存入 Set 的每个元素都必须唯一，加入 Set 的元素都必须确保对象的唯一性，Set 不保证维护元素的有序性，其主要实现类有 HashSet、LinkHashSet、TreeSet。HashSet 是为快速查找元素而设计，存入 HashSet 的元素必须定义 hashCode 方法，其实质可以理解为是 HashMap 的包装类，_所以 HashSet 的值还具备可 null 性_；LinkHashSet 具备 HashSet 的查找速度且通过链表保证了元素的插入顺序（实质为 HashSet 的子类），迭代时是有序的，同理存入 LinkHashSet 的元素必须定义 hashCode 方法；TreeSet 实质是 TreeMap 的包装类，_所以 TreeSet 的值不备可 null 性_，其保证了元素的有序性，底层为树结构，存入 TreeSet 的元素必须实现 Comparable 接口。
+Set 的主要特性就是唯一性和元素可空性，存入 Set 的每个元素都必须唯一，加入 Set 的元素都必须确保对象的唯一性，Set 不保证维护元素的有序性，其主要实现类有 HashSet、LinkHashSet、TreeSet。HashSet 是为快速查找元素而设计，存入 HashSet 的元素必须定义 hashCode 方法，其实质可以理解为是 HashMap 的包装类，_所以 HashSet 的值还具备可 null 性_；LinkHashSet 具备 HashSet 的查找速度且通过链表保证了元素的插入顺序（实质为 HashSet 的子类），迭代时是有序的，同理存入 LinkHashSet 的元素必须定义 hashCode 方法；TreeSet 实质是 TreeMap 的包装类，_所以 TreeSet 的值不备可 null 性_，其保证了元素的有序性，底层为红黑树结构，存入 TreeSet 的元素必须实现 Comparable 接口。
 
-Queue 的主要特性就是队列和元素不可空性，其主要的实现类有 LinkedList、PriorityQueue。LinkedList 保证了按照元素的插入顺序进行操作；PriorityQueue 按照优先级进行插入抽取操作，元素可以通过实现 Comparable 接口来保证优先顺序。
+Queue 的主要特性就是队列和元素不可空性，其主要的实现类有 LinkedList、PriorityQueue。LinkedList 保证了按照元素的插入顺序进行操作；PriorityQueue 按照优先级进行插入抽取操作，元素可以通过实现 Comparable 接口来保证优先顺序。Deque 是 Queue 的子接口，表示更为通用的双端队列，有明确的在头或尾进行查看、添加和删除的方法，ArrayDeque 基于循环数组实现，效率更高一些。
 
-Map 自立门户，但是也提供了嫁接到 Collection 相关方法，其主要特性就是维护键值对关联和查找特性，其主要实现类有 HashTab、HashMap、LinkedHashMap、TreeMap。HashTab 类似 HashMap，_但是不允许键为 null 和值为 null_，比 HashMap 慢，因为为同步操作；HashMap 是基于散列列表的实现，_其键和值都可以为 null_；LinkedHashMap 类似 HashMap，_其键和值都可以为 null_，其有序性为插入顺序或者最近最少使用的次序（LRU 算法的核心就是这个）；TreeMap 是基于红黑树算法实现的，查看键值对时会被排序，存入的元素必须实现 Comparable 接口，_但是不允许键为 null，值可以为 null_。
+Map 自立门户，但是也提供了嫁接到 Collection 相关方法，其主要特性就是维护键值对关联和查找特性，其主要实现类有 HashTab、HashMap、LinkedHashMap、TreeMap。HashTab 类似 HashMap，_但是不允许键为 null 和值为 null_，比 HashMap 慢，因为为同步操作；HashMap 是基于散列列表的实现，_其键和值都可以为 null_；LinkedHashMap 类似 HashMap，_其键和值都可以为 null_，其有序性为插入顺序或者最近最少使用的次序（LRU 算法的核心就是这个），之所以能有序，是因为每个元素还加入到了一个双向链表中；TreeMap 是基于红黑树算法实现的，查看键值对时会被排序，存入的元素必须实现 Comparable 接口，_但是不允许键为 null，值可以为 null_；如果键为枚举类型可以使用专门的实现类 EnumMap，它使用效率更高的数组实现。
 
 ### **26.简单说说 HashMap 的底层原理？**
 
@@ -1277,7 +1277,35 @@ ListIterator 可以定位当前的索引位置，通过 nextIndex() 和 previous
 
 都可实现删除对象，但是 ListIterator 可以实现对象的修改，通过 set() 方法可以实现，Iierator 仅能遍历，不能修改。
 
-### **29.。。。。。**
+容器类提供的迭代器都会在迭代中间进行结构性变化检测，如果容器发生了结构性变化，就会抛出 ConcurrentModificationException，所以不能在迭代中间直接调用容器类提供的 add、remove 方法，如需添加和删除，应调用迭代器的相关方法。
+
+### **29.（电话面试）简单谈谈你对 Java 容器的理解？**
+
+解析：
+
+在容器类中，我们看到了如下数据结构的应用：
+动态数组：ArrayList内部就是动态数组，HashMap内部的链表数组也是动态扩展的，ArrayDeque和PriorityQueue内部也都是动态扩展的数组。
+链表：LinkedList是用双向链表实现的，HashMap中映射到同一个链表数组的键值对是通过单向链表链接起来的，LinkedHashMap中每个元素还加入到了一个双向链表中以维护插入或访问顺序。
+哈希表：HashMap是用哈希表实现的，HashSet, LinkedHashSet和LinkedHashMap基于HashMap，内部当然也是哈希表。
+排序二叉树：TreeMap是用红黑树(基于排序二叉树)实现的，TreeSet内部使用TreeMap，当然也是红黑树，红黑树能保持元素的顺序且综合性能很高。
+堆：PriorityQueue是用堆实现的，堆逻辑上是树，物理上是动态数组，堆可以高效地解决一些其他数据结构难以解决的问题。
+循环数组：ArrayDeque是用循环数组实现的，通过对头尾变量的维护，实现了高效的队列操作。
+位向量：EnumSet是用位向量实现的，对于只有两种状态，且需要进行集合运算的数据，使用位向量进行表示、位运算进行处理，精简且高效。
+
+每种数据结构中往往包含一定的算法策略，这种策略往往是一种折中，比如：
+动态扩展算法：动态数组的扩展策略，一般是指数级扩展的，是在两方面进行平衡，一方面是希望减少内存消耗，另一方面希望减少内存分配、移动和拷贝的开销。
+哈希算法：哈希表中键映射到链表数组索引的算法，算法要快，同时要尽量随机和均匀。
+排序二叉树的平衡算法：排序二叉树的平衡非常重要，红黑树是一种平衡算法，AVL树是另一种，平衡算法一方面要保证尽量平衡，另一方面要尽量减少综合开销。
+
+Collections实现了一些通用算法，比如二分查找、排序、翻转列表顺序、随机化重排、循环移位等，在实现大部分算法时，Collections也都根据容器大小和是否实现了RandomAccess接口采用了不同的实现方式。
+
+设计思维和模式
+在容器类中，我们也看到了Java的多种语言机制和设计思维的运用：
+封装：封装就是提供简单接口，并隐藏实现细节，这是程序设计的最重要思维。在容器类中，很多类、方法和变量都是私有的，比如迭代器方法，基本都是通过私有内部类或匿名内部类实现的。
+继承和多态：继承可以复用代码，便于按父类统一处理，但我们也说过，继承是一把双刃剑。在容器类中，Collection是父接口，List/Set/Queue继承自Collection，通过Collection接口可以统一处理多种类型的集合对象。容器类定义了很多抽象容器类，具体类通过继承它们以复用代码，每个抽象容器类都有详细的文档说明，描述其实现机制，以及子类应该如何重写方法。容器类的设计展示了接口继承、类继承、以及抽象类的恰当应用。
+组合：一般而言，组合应该优先于继承，我们看到HashSet通过组合的方式使用HashMap，TreeSet通过组合使用TreeMap，适配器和装饰器模式也都是通过组合实现的。
+接口：面向接口编程是一种重要的思维，可降低代码间的耦合，提高代码复用程度，在容器类方法中，接受的参数和返回值往往都是接口，Collections提供的通用算法，操作的也都是接口对象，我们平时在使用容器类时，一般也只在创建对象时使用具体类，而其他地方都使用接口。
+设计模式：我们在容器类中看到了迭代器、工厂方法、适配器、装饰器等多种设计模式的应用。
 
 http://www.jfox.info/40-ge-java-ji-he-lei-mian-shi-ti-he-da-an.html
 http://www.importnew.com/22083.html
