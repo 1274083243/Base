@@ -1279,7 +1279,33 @@ ListIterator 可以定位当前的索引位置，通过 nextIndex() 和 previous
 
 容器类提供的迭代器都会在迭代中间进行结构性变化检测，如果容器发生了结构性变化，就会抛出 ConcurrentModificationException，所以不能在迭代中间直接调用容器类提供的 add、remove 方法，如需添加和删除，应调用迭代器的相关方法。
 
-### **29.（电话面试）简单谈谈你对 Java 容器的理解？**
+### **29.请实现一个极简 LRU 算法容器？**
+
+解析：
+
+看起来是一道很难的题目，其实静下来你会发现想考察的其实就是 LRU 的原理和 LinkedHashMap 容器知识，当然，你要是厉害不依赖 LinkedHashMap 自己纯手写撸一个也不介意。
+LinkedHashMap 支持插入顺序或者访问顺序，LRU 算法其实就要用到它访问顺序的特性，即对一个键执行 get、put 操作后其对应的键值对会移到链表末尾，所以最末尾的是最近访问的，最开始的最久没被访问的。
+LRU 是一种流行的替换算法，它的全称是 Least Recently Used，最近最少使用，它的思路是最近刚被使用的很快再次被用的可能性最高，而最久没被访问的很快再次被用的可能性最低，所以被优先清理。
+下面给出极简 LRU 缓存算法容器：
+```java
+public class LRUCache<K, V> extends LinkedHashMap<K, V> {
+    private int maxEntries;
+    
+	//maxEntries 最大缓存个数
+    public LRUCache(int maxEntries){
+        super(16, 0.75f, true);
+        this.maxEntries = maxEntries;
+    }
+    
+	//在添加元素到 LinkedHashMap 后会调用这个方法，传递的参数是最久没被访问的键值对，如果这个方法返回 true 则这个最久的键值对就会被删除，LinkedHashMap 的实现总是返回 false，所有容量没有限制。
+    @Override
+    protected boolean removeEldestEntry(Entry<K, V> eldest) {
+        return size() > maxEntries;
+    }
+}   
+```
+
+### **30.（电话面试）简单谈谈你对 Java 容器的理解？**
 
 解析：
 
