@@ -1305,7 +1305,9 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 }   
 ```
 
-### **30.（电话面试）简单谈谈你对 Java 容器的理解？**
+### **30.简单说说你对 Java 的 transient 关键字理解？**
+
+### **31.（电话面试）简单谈谈你对 Java 容器的理解？**
 
 解析：
 
