@@ -1377,10 +1377,30 @@ PrintWriter：装饰类，可直接指定文件名作为参数、可以指定编
 PipedReader、PipedWriter：分别是字符管道输入输出流，作用是让多线程可以通过管道进行线程间的通讯，在使用管道通信时，必须将 PipedReader、PipedWriter 配套使用。
 ```
 
-### **47.请简单谈谈你对 Java 的序列化理解？**
-### **48.谈谈 Java 的 NIO？**
-### **49.随机读写？**
+### **47.请简单谈谈你对 Java 的序列化与反序列化理解？**
 
+解析：
+
+序列化就是将对象转化为字节流，反序列化就是将字节流转化为对象，要让一个类支持序列化只要让这个类实现接口 java.io.Serializable 即可，Serializable 只是一个没有定义任何方法的标记接口，声明实现 Serializable 接口后保存读取对象就可以使用 ObjectOutputStream、ObjectInputStream 流了，ObjectOutputStream 是 OutputStream 的子类，但实现了 ObjectOutput 接口，ObjectOutput 是 DataOutput 的子接口，增加了一个 writeObject(Object obj) 方法将对象转化为字节写到流中，ObjectInputStream 是 InputStream 的子类，实现了ObjectInput 接口，ObjectInput 是 DataInput 的子接口，增加了一个 readObject() 方法从流中读取字节转为对象，序列化和反序列化的实质在于 ObjectOutputStream 的 writeObject 和 ObjectInputStream 的 readObject 方法实现，常见的 String、Date、Double、ArrayList、LinkedList、HashMap、TreeMap 等都默认实现了 Serializable。
+
+有时候我们对象有些字段的值可能与内存位置（hashcode）、当前时间等有关，所以我们不想序列化他，因为反序列化后的值是没有意义的，或者有时候如果类中的字段表示的是类的实现细节而非逻辑信息则默认序列化也是不适合的，所以我们需要定制序列化。Java 提供的定制主要有 transient 关键字方式和实现 writeObject、readObject 方式及 Externalizable 接口 readResolve、writeReplace 方式，还可以将字段声明为 transient 后通过 writeObject、readObject 方法来自己保存该字段。
+
+默认情况下 Java 会根据类中一系列信息自动生成一个版本号，在反序列化时如果类的定义发生了变化版本号就会变化，也就与反序列化流中的版本号不匹配导致会抛出异常，所以我们为了更好的控制和性能问题会自定义 serialVersionUID 版本号来避免类定义发生变化后反序列化版本号不匹配异常问题，如果版本号一样时流中有该字段而类定义中没有则该字段会被忽略，如果类定义中有而流中没有则该字段会被设为默认值，如果对于同名的字段类型变了则会抛出 InvalidClassException。
+
+### **48.谈谈 Java 的 NIO？**
+
+在一般的文件读写中，会有两次数据拷贝，一次是从硬盘拷贝到操作系统内核，另一次是从操作系统内核拷贝到用户态的应用程序。而在内存映射文件中，一般情况下，只有一次拷贝，且内存分配在操作系统内核，应用程序访问的就是操作系统的内核内存空间，这显然要比普通的读写效率更高。
+
+内存映射文件的另一个重要特点是，它可以被多个不同的应用程序共享，多个程序可以映射同一个文件，映射到同一块内存区域，一个程序对内存的修改，可以让其他程序也看到，这使得它特别适合用于不同应用程序之间的通信。
+
+操作系统自身在加载可执行文件的时候，一般都利用了内存映射文件，比如：
+按需加载代码，只有当前运行的代码在内存，其他暂时用不到的代码还在硬盘
+同时启动多次同一个可执行文件，文件代码在内存也只有一份
+不同应用程序共享的动态链接库代码在内存也只有一份
+
+内存映射文件也有局限性，比如，它不太适合处理小文件，它是按页分配内存的，对于小文件，会浪费空间，另外，映射文件要消耗一定的操作系统资源，初始化比较慢。
+
+简单总结下，对于一般的文件读写不需要使用内存映射文件，但如果处理的是大文件，要求极高的读写效率，比如数据库系统，或者需要在不同程序间进行共享和通信，那就可以考虑内存映射文件。
 
 
 http://www.jfox.info/40-ge-java-ji-he-lei-mian-shi-ti-he-da-an.html
