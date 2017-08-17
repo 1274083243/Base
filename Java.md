@@ -1307,6 +1307,10 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
 ### **30.简单说说你对 Java 的 transient 关键字理解？**
 
+我们都知道一个对象只要实现了 Serilizable 接口就可以被序列化了，java 的这种序列化模式使得我们可以不必关心具体序列化的过程，只要这个类实现了 Serilizable 接口则类的所有属性和方法都会自动序列化，而实际开发中我们常常会遇到这样的问题，这个类的有些属性需要序列化，而其他属性不需要被序列化，对于不要被序列化的属性就可以加上 transient 关键字。其主要的特性如下：
+
+一旦变量被 transient 修饰就不再是对象持久化的一部分，该变量内容在序列化后无法获得访问；transient 关键字只能修饰变量而不能修饰方法和类（注意本地变量是不能被 transient 关键字修饰的）；变量如果是用户自定义类变量，则该类需要实现 Serializable 接口；被 transient 关键字修饰的变量不再能被序列化，一个静态变量不管是否被 transient 修饰均不能被序列化（一个静态变量不管是否被 transient 修饰均不能被序列化，反序列化后类中 static 型变量的值为当前 JVM 中对应 static 变量的值，这个值是 JVM 中的不是反序列化得出的）；在 Java 中对象的序列化可以通过实现两种接口来实现，若实现的是 Serializable 接口则所有的序列化将会自动进行，若实现的是 Externalizable 接口则没有任何东西可以自动序列化，需要在 writeExternal 方法中进行手工指定所要序列化的变量，这与是否被 transient 修饰无关。
+
 ### **31.（电话面试）简单谈谈你对 Java 容器的理解？**
 
 解析：
