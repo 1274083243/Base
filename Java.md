@@ -664,9 +664,8 @@ System.out.println(str23.intern() == str20.intern());		//true
 
 3、泛型的好处其实就是约束，可以让我们编写的接口、类、方法等脱离具体类型限定而适用于更加广泛的类型，从而使代码达到低耦合、高复用、高可读、安全可靠的特点，避免主动向下转型带来的恶心可读性和隐晦的转换异常，尽可能的将类型问题暴露在 IDE 提示和编译阶段。
 
-### **19.Java 泛型实战面试全攻略，分别尝试回答小面几个小问题！（理解不了就 javap -c 等）**
+### **19.下面两个方法有什么区别，有什么问题？**
 
-_a.下面两个方法有什么区别，有什么问题？_
 ```java
 public static <T> T get1(T t1, T t2) {  
 	if(t1.compareTo(t2) >= 0);
@@ -684,7 +683,8 @@ get1 方法直接编译错误，因为编译器在编译前首先进行了泛型
 
 get2 方法添加了泛型类型限定可以正常使用，因为限定类型为 Comparable 接口，其存在 compareTo 方法，所以 t1、t2 擦除后被强转成功。所以类型限定在泛型类、泛型接口和泛型方法中都可以使用，不过不管该限定是类还是接口都使用 extends 和 & 符号，如果限定类型既有接口也有类则类必须只有一个且放在首位，如果泛型类型变量有多个限定则原始类型就用第一个边界的类型变量来替换。
 
-_b.下面程序的运行结果是什么？为什么？_
+### **20.下面程序的运行结果是什么？为什么？**
+
 ```java
 ArrayList<String> arrayList1 = new ArrayList<String>();  
 arrayList1.add("demo");  
@@ -706,7 +706,8 @@ for (int i=0;i<arrayList3.size();i++) {
 
 第二个正常打印数字 123 和字符串 demo，因为 arrayList3 是`ArrayList<Integer>`泛型类型只能存储整形，但是编译擦除后成了 ArrayList，add 参数擦除替换为 Object，所以可以 add String 类型。
 
-_c.请尝试解释下面程序中每行代码执行情况及原因？_
+### **21.请尝试解释下面程序中每行代码执行情况及原因？**
+
 ```java
 public class Test{
 	public static <T> T add(T x, T y){  
@@ -740,7 +741,8 @@ t0、t1、t2、t3 其实演示了调用泛型方法不指定泛型的几种情�
 
 切记，java 编译器是通过先检查代码中泛型的类型，然后再进行类型擦除，再进行编译的。
 
-_d.请尝试解释下面程序中每行代码执行情况及原因？_
+### **22.请尝试解释下面程序中每行代码执行情况及原因？**
+
 ```java
 ArrayList<String> arrayList1 = new ArrayList();		// 编译警告
 arrayList1.add("1");	// 编译通过  
@@ -776,7 +778,8 @@ arrayList4 拿回来直接用就可能出现 ClassCastException 异常啊，卧�
 
 同理对于 arrayList5 来说类似 arrayList4，只不过最终 get 出来是从 String 转为 Object，不会出现 ClassCastException 异常，但是一样卧槽啊，我还得自己转，毛线，泛型出现之一也是为了解决这个锅啊，所以 Java 直接不允许进行这样的引用传递，所以直接编译报错，扼杀在摇篮。
 
-_e.请尝试解释下面程序中注释问题？_
+### **23.请尝试解释下面程序中注释问题？**
+
 ```java
 ArrayList<String> arrayList = new ArrayList<String>();    
 if(arrayList instanceof ArrayList<String>) { //TODO }	//1.是否可以运行及结果原因
@@ -815,7 +818,8 @@ ArrayList listn = new ArrayList(); //已过时，取出来时需要自己强制�
 
 5 可以运行，在异常声明中可以使用泛型类型变量。
 
-_f.请尝试解释下面程序编译到运行的现象及原因？_
+### **24.请尝试解释下面程序编译到运行的现象及原因？**
+
 ```java
 List<String>[] ls1 = new ArrayList<String>[10];	//1
 List<String>[] ls2 = new ArrayList[10];	//2
@@ -838,7 +842,8 @@ Object[] oj = ls1;
 
 提示：直接使用`ArrayList<ArrayList<String>>`最安全且有效。
 
-_g.请尝试解释下面程序编译到运行的现象及原因？_
+### **25.请尝试解释下面程序编译到运行的现象及原因？**
+
 ```java
 a1 = new T(); //1
 
@@ -864,7 +869,8 @@ class Bean<T super Student> { //TODO }	//4
 
 4 编译时报错，因为 Java 类型参数限定只有 extends 形式，没有 super 形式。
 
-_h.请尝试解释下面程序编译到运行的现象及原因？_
+### **26.请尝试解释下面程序编译到运行的现象及原因？**
+
 ```java
 public class Test1<T> {    
     public static T value;   //1
@@ -893,7 +899,8 @@ class Test<T> {  //4 这个类可以运行吗？
 
 4 无法编译通过，因为擦除后方法 boolean equals(T) 变成了方法 boolean equals(Object)，这与 Object.equals 方法是冲突的，除非重新命名引发错误的方法。
 
-_i.下面程序有什么问题，该如何修复？_
+### **27.下面程序有什么问题，该如何修复？**
+
 ```java
 public class Test {  
     public static void main(String[] args) throws Exception{  
@@ -912,7 +919,8 @@ public class Test {
 语句`printCollection(listInteger);`编译报错，因为泛型的参数是没有继承关系的。
 修复方式就是使用 ？通配符，`printCollection(Collection<?> collection)`，因为在方法`printCollection(Collection<?> collection)`中不可以出现与参数类型有关的方法，譬如`collection.add()`，因为程序调用这个方法的时候传入的参数不知道是什么类型的，但是可以调用与参数类型无关的方法，譬如 collection.size()。
 
-_j.下面程序编译运行会有什么现象？_
+### **28.下面程序编译运行会有什么现象？**
+
 ```java
 Vector<? extends Number> x1 = new Vector<Integer>();	//正确
 Vector<? extends Number> x2 = new Vector<String>();	//编译错误
@@ -928,14 +936,14 @@ Vector<? super Integer> y2 = new Vector<Byte>();	//编译错误
 
 通配符对于下边界有如下限制：`Vector<? super 类型1> x = new Vector<类型2>();`中的类型1指定一个数据类型，则类型2就只能是类型1或者是类型1的父类。
 
-_k.什么是泛型中的限定通配符和非限定通配符？_
+### **29.什么是泛型中的限定通配符和非限定通配符？**
 
 解答：
 
 限定通配符对类型进行了限制，有两种限定通配符，一种是`<? extends T>`通过确保类型必须是 T 的子类来设定类型的上界，另一种是`<? super T>`它通过确保类型必须是 T 的父类来设定类型的下界，泛型类型必须用限定内的类型来进行初始化，否则会导致编译错误。
 另一方面`<?>`表示非限定通配符，因为`<?>`可以用任意类型来替代。
 
-_l.简单说说 Java 中`List<Object>`和原始类型`List`之间的区别？_
+### **30.简单说说 Java 中`List<Object>`和原始类型`List`之间的区别？**
 
 解答：
 
@@ -943,7 +951,7 @@ _l.简单说说 Java 中`List<Object>`和原始类型`List`之间的区别？_
 
 区别二：我们可以把任何带参数的类型传递给原始类型 List，但却不能把`List<String>`传递给接受`List<Object>`的方法，因为会产生编译错误。
 
-_m.Java 中`List<?>`和`List<Object>`之间的区别是什么？_
+### **31.Java 中`List<?>`和`List<Object>`之间的区别是什么？**
 
 解答：
 
@@ -961,7 +969,7 @@ listOfObjectType = (List<Object>) listOfString; //compiler error – in-converti
 通配符形式可以减少类型参数，形式上往往更为简单，可读性也更好，所以能用通配符的就用通配符。
 如果类型参数之间有依赖关系或者返回值依赖类型参数或者需要写操作则只能用类型参数。
 
-_n.`List<? extends T>`和`List <? super T>`之间有什么区别？_
+### **32.`List<? extends T>`和`List <? super T>`之间有什么区别？**
 
 解答：
 
@@ -974,7 +982,7 @@ public static <T> void copy(List<? super T> dest, List<? extends T> src)
 public static <T> T max(Collection<? extends T> coll, Comparator<? super T> comp)
 ```
 
-_o.`<T extends E>`和`<? extends E>`有什么关系？_
+### **33.`<T extends E>`和`<? extends E>`有什么关系？**
 
 解答：
 
@@ -986,7 +994,7 @@ public void addAll(Bean<? extends E> c)
 public <T extends E> void addAll(Bean<T> c) 
 ```
 
-_p.解释下面程序执行情况和原因？_
+### **34.解释下面程序执行情况和原因？**
 
 ```java
 DynamicArray<Integer> ints = new DynamicArray<>();
@@ -1009,8 +1017,7 @@ public void copyTo(DynamicArray<? super E> dest){
 
 最后方法的 add 是合法的，因为`<? super E>`形式与`<? extends E>`正好相反，超类型通配符表示 E 的某个父类型，有了它我们就可以更灵活的写入了。
 
-
-### **20.Arraylist 的动态扩容机制是如何自动增加的？简单说说你理解的增加流程！**
+### **35.Arraylist 的动态扩容机制是如何自动增加的？简单说说你理解的增加流程！**
 
 解析：
 
@@ -1062,7 +1069,7 @@ ensureCapacityInternal(size + 1)
  }
 ```
 
-### **21.下面这些方法可以正常运行吗？为什么？**
+### **36.下面这些方法可以正常运行吗？为什么？**
 ```java
 public void remove1(ArrayList<Integer> list) {
     for(Integer a : list){
@@ -1154,7 +1161,7 @@ private class Itr implements Iterator<E> {
 }
 ```
 
-### **22.简要解释下面程序的执行现象和结果？**
+### **37.简要解释下面程序的执行现象和结果？**
 ```java
 ArrayList<Integer> list = new ArrayList<Integer>();
 list.add(1);
@@ -1182,7 +1189,7 @@ list.add(4);	//3 结果是什么？为什么？
 
 3 当然可以正常运行咯，不可变结构的 Arrays 的 ArrayList 通过构造放入了真正的万能 ArrayList，自然就可以操作咯。
 
-### **23.简单解释一下 Collection 和 Collections 的区别？**
+### **38.简单解释一下 Collection 和 Collections 的区别？**
 
 解析：
 
@@ -1191,7 +1198,7 @@ java.util.Collection 是一个集合接口，它提供了对集合对象进行�
  
 java.util.Collections 是一个包装类，它包含有各种有关集合操作的静态多态方法，此类构造 private 不能实例化，就像一个工具类，服务于 Java 的 Collection 框架，其提供的方法大概可以分为对容器接口对象进行操作类（查找和替换、排序和调整顺序、添加和修改）和返回一个容器接口对象类（适配器将其他类型的数据转换为容器接口对象、装饰器修饰一个给定容器接口对象增加某种性质）。
 
-### **24.解释一下 ArrayList、Vector、Stack、LinkedList 的实现和区别及特点和适用场景？**
+### **39.解释一下 ArrayList、Vector、Stack、LinkedList 的实现和区别及特点和适用场景？**
 
 解析：
 
@@ -1209,7 +1216,7 @@ ArrayList 是一个动态数组队列，随机访问效率高，随机插入、�
 
 从差异角度看 LinkedList 还具备 Deque 双端队列的特性，其实现了 Deque 接口，Deque 继承自 Queue 队列接口，其实也挺好理解，因为 LinkedList 是的实现是双向链表结构，所以实现队列特性实在是太容易了。
 
-### **25.简单介绍下 List 、Map、Set、Queue 的区别和关系？**
+### **40.简单介绍下 List 、Map、Set、Queue 的区别和关系？**
 
 解析：
 
@@ -1239,7 +1246,7 @@ Map 自立门户，但是也提供了嫁接到 Collection 相关方法，其主�
 
 位向量：EnumSet 是用位向量实现的，对于只有两种状态且需要进行集合运算的数据使用位向量进行表示、位运算进行处理，精简且高效。
 
-### **26.简单说说 HashMap 的底层原理？**
+### **41.简单说说 HashMap 的底层原理？**
 
 答案：
 
@@ -1271,7 +1278,7 @@ HashMap 使用 Key 对象的 hashCode() 和 equals() 方法去决定 key-value �
 
 关于 HashMap 的 hash 函数算法巧妙之处可以参见本文链接：http://pengranxiang.iteye.com/blog/543893
 
-### **27.简单解释一下 Comparable 和 Comparator 的区别和场景？**
+### **42.简单解释一下 Comparable 和 Comparator 的区别和场景？**
 
 解析：
 
@@ -1281,7 +1288,7 @@ Comparable 对实现它的每个类的对象进行整体排序，这个接口需
 若一个类实现了 Comparable 接口就意味着该类支持排序，而 Comparator 是比较器，我们若需要控制某个类的次序，可以建立一个该类的比较器来进行排序。
 Comparable 比较固定，和一个具体类相绑定，而 Comparator 比较灵活，可以被用于各个需要比较功能的类使用。
 
-### **28.简单说说 Iterator 和 ListIterator 的区别？**
+### **43.简单说说 Iterator 和 ListIterator 的区别？**
 
 解析：
 
@@ -1295,7 +1302,7 @@ ListIterator 可以定位当前的索引位置，通过 nextIndex() 和 previous
 
 容器类提供的迭代器都会在迭代中间进行结构性变化检测，如果容器发生了结构性变化，就会抛出 ConcurrentModificationException，所以不能在迭代中间直接调用容器类提供的 add、remove 方法，如需添加和删除，应调用迭代器的相关方法。
 
-### **29.请实现一个极简 LRU 算法容器？**
+### **44.请实现一个极简 LRU 算法容器？**
 
 解析：
 
@@ -1321,7 +1328,7 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 }   
 ```
 
-### **30.简单说说你对 Java 的 transient 关键字理解？**
+### **45.简单说说你对 Java 的 transient 关键字理解？**
 
 解析：
 
