@@ -1336,6 +1336,52 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
 一旦变量被 transient 修饰就不再是对象持久化的一部分，该变量内容在序列化后无法获得访问；transient 关键字只能修饰变量而不能修饰方法和类（注意本地变量是不能被 transient 关键字修饰的）；变量如果是用户自定义类变量，则该类需要实现 Serializable 接口；被 transient 关键字修饰的变量不再能被序列化，一个静态变量不管是否被 transient 修饰均不能被序列化（一个静态变量不管是否被 transient 修饰均不能被序列化，反序列化后类中 static 型变量的值为当前 JVM 中对应 static 变量的值，这个值是 JVM 中的不是反序列化得出的）；在 Java 中对象的序列化可以通过实现两种接口来实现，若实现的是 Serializable 接口则所有的序列化将会自动进行，若实现的是 Externalizable 接口则没有任何东西可以自动序列化，需要在 writeExternal 方法中进行手工指定所要序列化的变量，这与是否被 transient 修饰无关。
 
+### **46.简单谈谈你所知道的 Java IO 流特性？**
+
+解析：
+
+java.io 包下面的流基本都是装饰器模式的实现，提供了各种类型流操作的便携性，常见的流分类如下：
+```
+以二进制字节方式读写的流（字节流没有编码的概念，转换字节需要考虑编码，不能按行处理，使用不太方便）主要有：
+
+InputStream、OutputStream: 二进制字节读写抽象类型的基类。
+
+FileInputStream、FileOutputStream: 输入输出目标是文件的流，构造支持 File 类型和 String 文件名类型及追加覆盖模式，以 byte 或 byte 数组读写文件，FileOutputStream 没有缓冲，没有重写flush，调用 flush 没有任何效果，数据只是传递给了操作系统，但操作系统什么时候保存到硬盘上是不一定的，按字节读取效率低。
+
+ByteArrayInputStream、ByteArrayOutputStream: 输入输出目标是字节数组的流，数组的长度是根据数据内容动态扩展的，ByteArrayOutputStream 无缓存，同理 flush 无效。
+
+DataInputStream、DataOutputStream: 按基本类型和字符串而非只是字节读写流装饰类，FilterInputStream、FilterOutputStream 装饰基类的子类，在写入时 DataOutputStream 会将这些类型的数据转换为其对应的二进制字节，必须按照字节读取，效率较低。
+
+BufferedInputStream、BufferedOutputStream: 对输入输出流提供缓冲功能的装饰类，BufferedInputStream 内部有个字节数组作为缓冲区，读取时先从这个缓冲区读，缓冲区读完了再调用包装的流读，BufferedOutputStream 的构造方法也有两个，默认的缓冲区大小也是 8192，它的 flush 方法会将缓冲区的内容写到包装的流中。
+
+PipedInputStream、PipedOutputStream：分别是管道输入输出流，作用是让多线程可以通过管道进行线程间的通讯，在使用管道通信时，必须将 PipedOutputStream 和 PipedInputStream 配套使用。
+
+PrintStream：继承于 FilterOutputStream 来装饰其它输出流的流。提供了自动 flush 和字符集设置功能。
+
+以文本字符方式读写的流（文本文件中编码非常重要）主要有：
+
+Reader、Writer：字符流的抽象基类。
+
+InputStreamReader、OutputStreamWriter：适配器类，输入是 InputStream，输出是 OutputStream，将字节流转换为字符流，一个重要的参数是编码类型，如果没有传则为系统默认编码。
+
+FileReader、FileWriter：输入输出目标是文件的字符流，InputStreamReader、OutputStreamWriter 的子类，需要注意的是 FileReader、FileWriter 不能指定编码类型，只能使用默认编码，如果需要指定编码类型可以使用 InputStreamReader、OutputStreamWriter。
+
+CharArrayReader、CharArrayWriter: 输入输出目标是 char 动态调整数组的字符流，类似 ByteArrayInputStream、ByteArrayOutputStream。
+
+StringReader、StringWriter：输入输出目标是 String 的字符流，与 CharArrayReader、CharArrayWriter 类似。
+
+BufferedReader、BufferedWriter：装饰类，对输入输出流提供缓冲以及按行读写功能，FileReader、FileWriter 是没有缓冲的、也不能按行读写，所以一般应该在它们的外面包上对应的缓冲类。
+
+PrintWriter：装饰类，可直接指定文件名作为参数、可以指定编码类型、可以自动缓冲、可以自动将多种类型转换为字符串，在输出到文件时可以优先选择该类。
+
+PipedReader、PipedWriter：分别是字符管道输入输出流，作用是让多线程可以通过管道进行线程间的通讯，在使用管道通信时，必须将 PipedReader、PipedWriter 配套使用。
+```
+
+### **47.请简单谈谈你对 Java 的序列化理解？**
+### **48.谈谈 Java 的 NIO？**
+### **49.随机读写？**
+
+
 
 http://www.jfox.info/40-ge-java-ji-he-lei-mian-shi-ti-he-da-an.html
 http://www.importnew.com/22083.html
