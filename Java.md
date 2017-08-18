@@ -1389,7 +1389,18 @@ PipedReader、PipedWriter：分别是字符管道输入输出流，作用是让�
 
 ### **48.Java 线程优先级是怎么定义的，Java 线程有几种状态？**
 
+解析：
 
+Java 线程的优先级定义为从 1 到 10 的等级，默认为 5，设置和获取线程优先级的方法是 setPriority(int newPriority) 和 getPriority()，Java 的这个优先级会被映射到操作系统中线程的优先级，不过由于操作系统各不相同，不一定都是 10 个优先级，所以 Java中 不同的优先级可能会被映射到操作系统中相同的优先级，同时优先级对操作系统而言更多的是一种建议和提示而非强制，所以我们不要过于依赖优先级。
+
+Java Thread 可以通过 State getState() 来获取线程状态，Thread.State 枚举定义了 NEW、RUNNABLE、BLOCKED、WAITING、TIMED_WAITING、TERMINATED 六种线程状态，关于这六种状态解释如下：
+
+NEW: 没有调用start的线程状态为NEW
+TERMINATED: 线程运行结束后状态为TERMINATED
+RUNNABLE: 调用start后线程在执行run方法且没有阻塞时状态为RUNNABLE，不过，RUNNABLE不代表CPU一定在执行该线程的代码，可能正在执行也可能在等待操作系统分配时间片，只是它没有在等待其他条件
+BLOCKED、WAITING、TIMED_WAITING：都表示线程被阻塞了，在等待一些条件，其中的区别我们在后续章节再介绍
+
+### **49.？**
 
 ### **.谈谈 Java 的 NIO 与内存映射**
 
