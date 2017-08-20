@@ -1407,9 +1407,13 @@ TIMED_WAITING（有限等待，实质对应阻塞状态），表示此线程正�
 
 TERMINATED（终止），表示线程执行完毕，已经退出。
 
-### **49.？**
+### **49.简单说说你对 Java synchronized 的理解？**
 
-### **.谈谈 Java 的 NIO 与内存映射**
+解析：
+
+synchronized 关键字主要用来解决多线程共享内存的并发同步问题，可以用来修饰类的实例方法、静态方法、代码块；synchronized 实例方法实际保护的是同一个对象的方法调用，当为不同对象时多线程是可以同时访问同一个 synchronized 方法的；synchronized 静态方法和 synchronized 实例方法保护的是不同对象，不同的两个线程可以同时一个执行 synchronized 静态方法，另一个执行 synchronized 实例方法，因为 synchronized 静态方法保护的是 class 类对象，synchronized 实例方法保护的是 this 实例对象；synchronized 代码块同步的可以是任何对象，因为任何对象都有一个锁和等待队列。
+
+### **.谈谈 Java 的 NIO 与内存映射，线程原子性、有序性、可见性**
 
 
 
