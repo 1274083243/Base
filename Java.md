@@ -1393,12 +1393,19 @@ PipedReader、PipedWriter：分别是字符管道输入输出流，作用是让�
 
 Java 线程的优先级定义为从 1 到 10 的等级，默认为 5，设置和获取线程优先级的方法是 setPriority(int newPriority) 和 getPriority()，Java 的这个优先级会被映射到操作系统中线程的优先级，不过由于操作系统各不相同，不一定都是 10 个优先级，所以 Java中 不同的优先级可能会被映射到操作系统中相同的优先级，同时优先级对操作系统而言更多的是一种建议和提示而非强制，所以我们不要过于依赖优先级。
 
-Java Thread 可以通过 State getState() 来获取线程状态，Thread.State 枚举定义了 NEW、RUNNABLE、BLOCKED、WAITING、TIMED_WAITING、TERMINATED 六种线程状态，关于这六种状态解释如下：
+Java Thread 可以通过 State getState() 来获取线程状态，Thread.State 枚举定义了 NEW、RUNNABLE、BLOCKED、WAITING、TIMED_WAITING、TERMINATED 六种线程状态，其实真正严格意义来说线程只有就绪、阻塞、运行三种状态，Java 线程之所以有六种状态其实是站在 Thread 对象实例的角度来看待的，具体解释如下：
 
-NEW: 没有调用start的线程状态为NEW
-TERMINATED: 线程运行结束后状态为TERMINATED
-RUNNABLE: 调用start后线程在执行run方法且没有阻塞时状态为RUNNABLE，不过，RUNNABLE不代表CPU一定在执行该线程的代码，可能正在执行也可能在等待操作系统分配时间片，只是它没有在等待其他条件
-BLOCKED、WAITING、TIMED_WAITING：都表示线程被阻塞了，在等待一些条件，其中的区别我们在后续章节再介绍
+NEW（新建），表示线程 Thread 刚被创建，还没调用 start 方法。
+
+RUNNABLE（运行，实质对应就绪和运行状态），表示 Thread 线程正在 JVM 中运行，也就是说处于就绪和运行状态的线程在 Thread 中都表现为 RUNNABLE。
+
+BLOCKED（阻塞，实质对应阻塞状态），表示等待监视锁可以重新进行同步代码块中执行，此线程需要获得某个锁才能继续执行，而这个锁目前被其他线程持有，所以进入了被动的等待状态，直到抢到了那个锁才会再次进入就绪状态。
+
+WAITING（等待，实质对应阻塞状态），表示此线程正处于无限期的主动等待中，直到有人唤醒它它才会再次进入就绪状态。
+
+TIMED_WAITING（有限等待，实质对应阻塞状态），表示此线程正处于有限期的主动等待中，要么有人唤醒它，要么等待够了一定时间之后才会再次进入就绪状态，譬如调用 sleep、join、wait 方法可能导致线程处于等待状态。
+
+TERMINATED（终止），表示线程执行完毕，已经退出。
 
 ### **49.？**
 
