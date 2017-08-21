@@ -1494,6 +1494,61 @@ startThreadB mLockB enter!
 
 考虑加锁时限：可以在尝试获取锁的时候加一个超时时间，若一个线程没有在给定的时限内成功获得所有需要的锁则会进行回退并释放所有已经获得的锁，然后等待一段随机的时间再重试，这段随机的等待时间让其它线程有机会尝试获取相同的这些锁，并且让该应用在没有获得锁的时候可以继续运行。
 
+### **51.下面程序有什么问题？该如何修改？**
+```java
+public class SyncCollection {
+    private static void putThread(final List<String> list) {
+        new Thread() {
+            @Override
+            public void run() {
+                for (int index=0; index<1000; index++) {
+                    list.add("data-"+index);
+                }
+            }
+        }.start();
+    }
+
+    private static void loopThread(final List<String> list) {
+        new Thread() {
+            @Override
+            public void run() {
+                while (true) {
+                    for (String item : list) {
+                        Log.i("YYYY", "item is "+item);
+                    }
+                }
+            }
+        }.start();
+    }
+
+    public static void run() {
+        final List<String> list = Collections.synchronizedList(new ArrayList<String>());
+        putThread(list);
+        loopThread(list);
+    }
+}
+```
+
+解析：
+
+该程序运行会在 loopThread 方法的 for 循环迭代器里面抛出 ConcurrentModificationException 异常，因为在遍历容器时容器结构发生了变化（add 操作），所以会抛出该异常，如果要避免这个问题需要在遍历容器时给整个容器对象加锁，如下：
+```java
+......
+while (true) {
+        synchronized (list) {
+            for (String item : list) {
+                Log.i("YYYY", "item is "+item);
+            }
+        }
+    }
+}
+......
+```
+这样就保证了 for 循环迭代的同步性，之所以只给这个方法添加 synchronized (list) 是因为 list 对象其实就是 Collections.synchronizedList 返回的同步 List 里面 add 等操作用的锁对象，所以不用给上面的 putThread 方法再添加。
+
+### **52.？**
+
+
 ### **.谈谈 Java 的 NIO 与内存映射，线程原子性、有序性、可见性**
 
 
