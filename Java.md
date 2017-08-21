@@ -1546,7 +1546,8 @@ while (true) {
 ```
 这样就保证了 for 循环迭代的同步性，之所以只给这个方法添加 synchronized (list) 是因为 list 对象其实就是 Collections.synchronizedList 返回的同步 List 里面 add 等操作用的锁对象，所以不用给上面的 putThread 方法再添加。
 
-### **52.？**
+### **52.简单谈谈 Java 并发协作的 wait、notify、notifyAll 等方法的特点和场景？**
+
 
 
 ### **.谈谈 Java 的 NIO 与内存映射，线程原子性、有序性、可见性**
