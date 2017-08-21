@@ -1419,14 +1419,80 @@ synchronized 还具备内存可见性，除了实现原子操作避免竞态以�
 
 synchronized 是重量级锁，其语义底层是通过一个 monitor 监视器对象来完成，其实 wait、notify 等方法也依赖于 monitor 对象，所以这就是为什么只有在同步的块或者方法中才能调用 wait、notify 等方法，否则会抛出 IllegalMonitorStateException 异常的原因，监视器锁（monitor）的本质依赖于底层操作系统的互斥锁（Mutex Lock）实现，而操作系统实现线程之间的切换需要从用户态转换到核心态，这个成本非常高，状态之间的转换需要相对比较长的时间，所以这就是为什么 synchronized 效率低且重量级的原因（Java 1.6 进行了优化，但是相比其他锁机制还是略显偏重）。
 
-### **50.什么是死锁？请模拟写出一段 Java 死锁的核心代码？**
+### **50.什么是死锁？请模拟写出一段 Java 死锁的核心代码？如何避免死锁？**
 
 解析：
 
-关于什么是死锁其实就是陷入互相等待谁都无法执行的一种状态，譬如有 A B 两个线程，A 持有 LockA 锁且在等待 LockB 锁，而 B 持有锁 LockB 且在等待 LockA 锁，LockA LockB 陷入互相等待导致谁都无法执行的一种现象。
+关于什么是死锁其实就是陷入互相等待谁都无法执行的一种状态，譬如有 A B 两个线程，A 持有 LockA 锁且在等待 LockB 锁，而 B 持有锁 LockB 且在等待 LockA 锁，LockA LockB 陷入互相等待导致谁都无法执行的一种现象。当发生死锁可以采用 jstack 命令进行分析，Android 上面可以采用 Android Device Monitor Thread 进行分析。
 
+关于死锁的核心代码例子如下：
+```java
+public class ThreadLoop {
+    private static Object mLockA = new Object();
+    private static Object mLockB = new Object();
 
+    private static void startThreadA() {
+        new Thread() {
+            @Override
+            public void run() {
+                Log.i("YYYY", "startThreadA running!");
+                synchronized (mLockA) {
+                    Log.i("YYYY", "startThreadA mLockA enter!");
+                    ThreadLoop.sleep(200);
+                    synchronized (mLockB) {
+                        Log.i("YYYY", "startThreadA mLockB enter!");
+                    }
+                }
+                Log.i("YYYY", "startThreadA over!");
+            }
+        }.start();
+    }
 
+    private static void startThreadB() {
+        new Thread() {
+            @Override
+            public void run() {
+                Log.i("YYYY", "startThreadB running!");
+                synchronized (mLockB) {
+                    Log.i("YYYY", "startThreadB mLockB enter!");
+                    ThreadLoop.sleep(200);
+                    synchronized (mLockA) {
+                        Log.i("YYYY", "startThreadB mLockA enter!");
+                    }
+                }
+                Log.i("YYYY", "startThreadB over!");
+            }
+        }.start();
+    }
+
+    private static void sleep(long time) {
+        try {
+            Thread.sleep(time);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void start() {
+        startThreadA();
+        startThreadB();
+    }
+}
+```
+运行结果可能如下：
+```
+startThreadA running!
+startThreadA mLockA enter!
+startThreadB running!
+startThreadB mLockB enter!
+//陷入死锁...
+```
+
+避免死锁其实主要有如下几个经验：
+
+考虑加锁顺序：当多个线程需要相同的一些锁但每个线程又按照不同顺序加锁则很容易发生死锁（如上面死锁的例子），如果能确保所有的线程都是按照相同的顺序获得锁则发生死锁的情况就不存在了。
+
+考虑加锁时限：可以在尝试获取锁的时候加一个超时时间，若一个线程没有在给定的时限内成功获得所有需要的锁则会进行回退并释放所有已经获得的锁，然后等待一段随机的时间再重试，这段随机的等待时间让其它线程有机会尝试获取相同的这些锁，并且让该应用在没有获得锁的时候可以继续运行。
 
 ### **.谈谈 Java 的 NIO 与内存映射，线程原子性、有序性、可见性**
 
