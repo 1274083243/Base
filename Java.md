@@ -1548,7 +1548,27 @@ while (true) {
 
 ### **52.简单谈谈 Java 并发协作的 wait、notify、notifyAll 等方法的特点和场景？**
 
+解析：
 
+首先并发协作的 wait、notify、notifyAll 等方法是定义在 java 的 Object 类中，而非 Thread，wait 有一个重载方法，参数 0 表示无限等待，更加重要的是在等待期间均可被中断抛出 InterruptedException（很重要），每个对象都有一把锁和等待队列，线程在进入 synchronized 时如果尝试获取锁失败就会把当前线程加入锁的等待队列，其实每个对象除过有用于锁的等待队列外还有一个条件队列，条件队列就是用来进行线程间的协作的，调用 wait 方法就会把当前线程放入这个条件队列并阻塞，然后等待其他线程通过 notify 或者 notifyAll 触发这个条件（自己无法触发）来执行，惟一的区别就是 notify 会从条件队列选择一个线程触发条件并且从队列移除而 notifyAll 会触发条件队列里所有等待的线程并从队列移除。
+
+wait 和 notify、notifyAll 只能在 synchronized 函数或者对象中调用，被上锁的对象一般是多线程共享的对象，如果调用 wait 和 notify、notifyAll 方法时当前线程没有持有对象锁则会抛出 IllegalMonitorStateException 异常。切记代码执行到 synchronized 锁起来的 wait 方法时当前线程会释放对象锁，因为 wait 的具体实现过程是先把当前线程放入条件等待队列、释放对象锁、阻塞等待（线程状态变为 WAITING 或 TIMED_WATING），等待时间到了或者被其他线程 notify、notifyAll 以后从条件队列中移除然后要重新竞争对象锁，竞争到就变为 RUNNABLE 状态，否则该线程被加入对象锁队列变为 BLOCKED 状态。切记调用 notify、notifyAll 会把条件队列中等待的线程移除但是不会释放对象锁，只有在包含 notify、notifyAll 的 synchronized 方法或者代码块执行完毕才能轮到等待的线程执行。
+
+除过我们要保证 wait 和 notify、notifyAll 应该在被 synchronized 的背景下和那个被多线程共享的对象上调用以外还要尽可能保证永远在条件循环而不是 if 语句中使用 wait，因为线程从 wait 调用中返回后不代表其等待的条件就一定成立，所以我们在使用 wait 时应该尽量使用如下模板：
+```java
+// The standard idiom for calling the wait method in Java 
+synchronized (sharedObject) { 
+    while (condition) { 
+    sharedObject.wait(); 
+        // (Releases lock, and reacquires on wakeup) 
+    } 
+    // do action based upon condition e.g. take or put into queue 
+}
+```
+在条件循环里使用 wait 的目的是在线程被唤醒的前后都持续检查条件是否被满足，如果条件并未改变而 wait 被调用之前 notify 的唤醒通知就来了，那么这个线程并不能保证被唤醒且有可能会导致死锁问题（建立在全局项目超过两个线程以上）。譬如假设有两个生产者 A、B，一个消费者 C，在生产消费者模式中如果对生产者 A、B 不使用条件循环而简单 if 判断中调用 wait 就会出事，当空间满了后 A、B 都被 wait，当 C 取走一个数据后如果调用了 notifyAll 则 A、B 都将被唤醒，假设 A 被唤醒后往空间放入一个数据且空间满了，而此时 B 也会放置一个数据，所以发生空间炸裂错误。
+（提示：如上也解答了并发的另一个面试题 ---- Java 多线程为什么使用 while 循环来调用 wait 方法？）
+
+并发协作其实在 java.util.concurrent 包下已经提供了很多不错且高效的封装实现类了，不过我们依然可以自己使用 wait 和 notify、notifyAll 来解决生产消费者场景、并发等待等场景问题。
 
 ### **.谈谈 Java 的 NIO 与内存映射，线程原子性、有序性、可见性**
 
