@@ -1567,12 +1567,21 @@ synchronized (sharedObject) {
 ```
 在条件循环里使用 wait 的目的是在线程被唤醒的前后都持续检查条件是否被满足，如果条件并未改变而 wait 被调用之前 notify 的唤醒通知就来了，那么这个线程并不能保证被唤醒且有可能会导致死锁问题（建立在全局项目超过两个线程以上）。譬如假设有两个生产者 A、B，一个消费者 C，在生产消费者模式中如果对生产者 A、B 不使用条件循环而简单 if 判断中调用 wait 就会出事，当空间满了后 A、B 都被 wait，当 C 取走一个数据后如果调用了 notifyAll 则 A、B 都将被唤醒，假设 A 被唤醒后往空间放入一个数据且空间满了，而此时 B 也会放置一个数据，所以发生空间炸裂错误。
 （提示：如上也解答了并发的另一个面试题 ---- Java 多线程为什么使用 while 循环来调用 wait 方法？）
+（其实 Thread 的 join 方法实现也是条件循环，核心代码如下：`while (isAlive()) {lock.wait(0);}`）
 
 并发协作其实在 java.util.concurrent 包下已经提供了很多不错且高效的封装实现类了，不过我们依然可以自己使用 wait 和 notify、notifyAll 来解决生产消费者场景、并发等待等场景问题。
 
-### **.谈谈 Java 的 NIO 与内存映射，线程原子性、有序性、可见性**
+### **53.说说你知道的 Java 取消、关闭、中断线程的方式及使用原因？**
+
+解析：
 
 
+
+### **.谈谈 Java 的 NIO 与内存映射，线程原子性、有序性、可见性，生产消费者模式 wait、notify 和 concurrent 方式的实现，**
+
+
+并发问题
+http://www.importnew.com/12773.html
 
 http://www.jfox.info/40-ge-java-ji-he-lei-mian-shi-ti-he-da-an.html
 http://www.importnew.com/22083.html
