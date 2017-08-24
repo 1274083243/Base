@@ -1571,11 +1571,19 @@ synchronized (sharedObject) {
 
 并发协作其实在 java.util.concurrent 包下已经提供了很多不错且高效的封装实现类了，不过我们依然可以自己使用 wait 和 notify、notifyAll 来解决生产消费者场景、并发等待等场景问题。
 
-### **53.说说你知道的 Java 取消、关闭、中断线程的方式及使用原因？**
+### **53.说说你知道的 Java 停止线程的方式及优劣点？**
 
 解析：
 
+关于停止 Java 线程的常见方式及优劣点主要如下：
 
+[不推荐]使用 Thread 的 stop() 方式结束线程已经不推荐了，因为它是一种恶意的中断，一旦执行 stop 方法就会立即终止当前正在运行的线程，所以它无法保证线程逻辑是否完整（譬如线程中重要的资源清理等逻辑代码还没来得及执行就被 stop 掉了，这是非常危险的）；同时会破坏原子性操作，因为一般任何进行加锁的代码块都是为了保护数据的一致性，而调用 stop 后导致该线程所持有的所有锁被突然释放，这样就导致被保护的数据有可能呈现不一致性，其他线程在使用这些被破坏的数据时有可能导致一些很奇怪的应用程序错误。
+
+[推荐]使用 Thread 的 interrupt() 方式中断线程是要看场景决定的，Java 的中断并不是 stop 一样强迫终止一个线程，而是一种给对应线程传递取消信号的协作机制，由对应线程决定如何及何时退出。每个线程都有一个中断标志位（Native 实现），线程的对象方法 isInterrupted() 方法就是返回该标志是否为 true；线程的静态方法 interrupted() 方法也是返回该标志是否为 true，但是它会清空标志位；调用 interrupt() 方法对线程的效果取决于线程的当前状态和在进行的 IO 操作，所以这种方式中断线程需要看场合决定。如果线程处于 RUNNABLE 状态且无 IO 操作则 interrupt() 方法只会设置线程的中断标志位而无其他任何作用，所以这种情况下我们需要在线程运行的合适位置检查中断标记来中断线程，譬如 while 循环条件为 !Thread.isInterrupted()；如果线程处于 WAITING、TIMED_WAITING 状态则 interrupt() 方法会使该线程抛出 InterruptedException 异常且在异常抛出后中断标志会被清空而不是设置，这也就是为什么我们使用 wait、join、sleep 方法时必须要处理受检查的 InterruptedException 异常原因，所以我们一般需要在捕获这种异常后进行线程的终止回收逻辑同时最好再调用一下 Thread.currentThread().interrupt() 设置下当前线程中断标志位；如果线程处于 BLOCKED 锁等待状态则 interrupt() 方法只会设置线程的中断标志位而无其他任何作用，所以 interrupt 无法让一个处于等待锁的线程真正中断，譬如当线程 A、B 共用 LockM 锁，A 如果在获取 LockM 锁后调用 B 的 interrupt() 后接着执行其他耗时操作后才释放 LockM 锁，而在 A 获得 LockM 锁的期间 B 刚好处于锁等待状态，这时即便 B 的锁代码块中显式调用了 !Thread.isInterrupted() 方法也不会中断，只能等到 B 获取锁后才可以中断；如果线程处于 NEW、TERMINATE 状态则 interrupt() 方法没有任何效果，中断标志都不会被设置，这自然是一种没有意义的操作；如果线程处于 IO 操作阻塞情况则 interrupted() 方法的效果取决于当前阻塞的 IO 类，如果类实现了 InterruptibleChannel 接口（一般都是 NIO 的通道操作有实现此接口）则可中断且使 IO 通道关闭且会收到 ClosedByInterruptException 异常且会设置中断状态，如果阻塞的 IO 类是 NIO 的 Selector 则也会被中断且设置标志，如果 IO 类操作是常见的 ServerSocket 的 accept、InputStream 的 read 等调用则只会设置线程的中断标志而不会中断。所以说如果不明白自己的线程在做什么就不要想当然的调用 interrupt()，因为不一定会终止线程，更多的是一种标志协作。
+
+[推荐]自定义中断信号量方式，这种方式中断 RUNNABLE 状态的线程也是很常见的，使用 volatile 的原子性共享标记变量来告诉线程必须停止正在运行的任务。
+
+[推荐]使用 java.util.concurrent 并发包下面提供的方法（很多实质还是 interrupt()），譬如 Future 的 boolean cancel(boolean mayInterruptIfRunning) 方法、ExecutorService 的 shutdown()、shutdownNow() 方法等。
 
 ### **.谈谈 Java 的 NIO 与内存映射，线程原子性、有序性、可见性，生产消费者模式 wait、notify 和 concurrent 方式的实现，**
 
