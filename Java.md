@@ -1419,6 +1419,10 @@ synchronized 还具备内存可见性，除了实现原子操作避免竞态以�
 
 synchronized 是重量级锁，其语义底层是通过一个 monitor 监视器对象来完成，其实 wait、notify 等方法也依赖于 monitor 对象，所以这就是为什么只有在同步的块或者方法中才能调用 wait、notify 等方法，否则会抛出 IllegalMonitorStateException 异常的原因，监视器锁（monitor）的本质依赖于底层操作系统的互斥锁（Mutex Lock）实现，而操作系统实现线程之间的切换需要从用户态转换到核心态，这个成本非常高，状态之间的转换需要相对比较长的时间，所以这就是为什么 synchronized 效率低且重量级的原因（Java 1.6 进行了优化，但是相比其他锁机制还是略显偏重）。
 
+synchronized 在发生异常时会自动释放线程占用的锁资源，Lock 需要在异常时主动释放，synchronized 在锁等待状态下无法响应中断而 Lock 可以。
+
+还可以参考 JVM 官方文档：http://docs.oracle.com/javase/specs/jvms/se8/html/jvms-3.html#jvms-3.14
+
 ### **50.什么是死锁？请模拟写出一段 Java 死锁的核心代码？如何避免死锁？**
 
 解析：
