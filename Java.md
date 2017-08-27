@@ -1651,7 +1651,21 @@ volatile 有序性的保证有两层含义，当程序执行到 volatile 变量�
 
 volatile 常见的使用场景为多线程自定义条件标记变量中断和单例模式的 double check 等。
 
-### **56.？**
+### **56.什么是原子变量？为什么需要他们？Java 提供了哪些原子变量类型？**
+
+解析：
+
+原子变量就是原子操作，是在多线程环境下避免数据不一致必须的手段，譬如`int++`就不是一个原子操作，因为当一个线程读取它的值并加 1 时另外一个线程有可能会读到之前的值而引发错误，所以为了解决这个问题就必须保证增加操作是原子操作，在 JDK1.5 之前可以使用 synchronized 同步技术来做到原子操作（成本太高，需要获取释放锁，获取不到锁还要等待，还有线程的上下文切换操作），而在 JDK1.5 的 java.util.concurrent.atomic 包中 Java 提供了可以自动保证是原子操作且不需要使用 synchronized 同步的实现类。
+
+java 提供的原子变量类型都在 java.util.concurrent.atomic 包下面，基本的有 AtomicBoolean（原子布尔类型）、AtomicInteger（原子Integer类型）、AtomicLong（原子Long类型）、AtomicReference（原子引用类型），针对基本的对应的数组类型有 AtomicIntegerArray、AtomicLongArray、AtomicReferenceArray，为了便于以原子方式更新对象中字段而增加的类型有 AtomicIntegerFieldUpdater、AtomicLongFieldUpdater、AtomicReferenceFieldUpdater，AtomicReference 还有两个类似的类 AtomicMarkableReference、AtomicStampedReference，对于 char、short、float、double 类型如果我们需要可以转换（floatToIntBits）为 int 或者 long 来使用。
+
+### **57.简单谈谈你对 CAS 的认识和理解？**
+
+解析：
+
+
+
+### **58.什么是乐观锁，什么是悲观锁？**
 
 ### **.谈谈 Java 的 NIO 与内存映射，线程原子性、有序性、可见性，生产消费者模式 wait、notify 和 concurrent 方式的实现，**
 
