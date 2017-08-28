@@ -172,7 +172,7 @@ false。
 
 **原因:**
 
-考 String 的 toString 方式，toString 方法进行了 instance of 判断。
+考 String 的 equals 方式，equals 方法进行了 instance of 判断。
 
 ### **8.下面的题目结果是什么?**
 ```java
