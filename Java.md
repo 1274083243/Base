@@ -1705,9 +1705,47 @@ public class AtomicInteger extends Number implements java.io.Serializable {
 
 CAS 策略算法其实有个致命的 ABA 问题，如果一个变量 V 初次读取时值为 A，并且在准备赋值时检查到仍然是 A，而这时候又在多线程的场景下我们是无法确认这段时间之内是否值被其他线程先修改为 B 接着改回了 A，所以 CAS 就会在这种场景下误认为变量从来没被修改过，也就是 ABA 问题了，这个问题一般是没啥影响的，如果程序逻辑需要处理 ABA 场景就可以使用 AtomicStampedReference，在修改值的同时传入一个唯一标记（譬如时间戳），只有值和标记都想等才进行修改，使用 AtomicMarkableReference 也可以，只不过标记是 boolean 类型。
 
+### **58.说说 synchronized 与 Lock 的区别及优劣点？你用过 Java Lock 的哪些实现类？**
 
+解析：
 
-### **58.什么是乐观锁，什么是悲观锁？**
+关于 synchronized 与 Lock 的区别及优劣点主要如下：
+synchronized 是 Java 的一个内置特性关键字，而 Lock 是 Java 的一个接口类；synchronized 在发生异常时会自动释放线程占用的锁，而 Lock 在发生异常时（不发生也一样）需要主动在 
+finally 中调用 unLock() 去释放锁；Lock 可以让等待锁的线程响应中断，而 synchronized 无法响应中断，会一直等待下去；Lock 可以知道有没有成功获取到锁，而 synchronized 无法办到；Lock 可以提高多线程进行读操作的效率，而 synchronized 不可以；在性能上来说如果竞争资源不激烈则两者差距不大，如果竞争资源非常激烈（很多线程同时抢占）时 Lock 的性能远远好于 synchronized；不过要注意只能中断阻塞中的线程，一旦获取到锁进入运行状态就无法中断。
+
+Lock 接口及其主要实现类都位于 java.util.concurrent.locks 包下，Lock 的主要方法如下：
+```java
+//切记Lock不会主动释放锁
+public interface Lock {
+    //用来获取锁，如果锁已被其他线程获取则进行等待，等待过程无法中断。
+    void lock();
+    //用来获取锁，如果线程正在等待获取锁则这个线程能够响应中断，即可以中断线程的等待状态。
+    void lockInterruptibly() throws InterruptedException;
+    //用来尝试获取锁，如果获取成功则返回true，如果获取失败（即锁已被其他线程获取）则返回false，该方法会立即返回，在拿不到锁时也不会一直在那等待。
+    boolean tryLock();
+    //用来尝试获取锁，区别在于拿不到锁时会等待一定的时间，在时间期限之内如果还拿不到锁，就返回false，如果如果一开始拿到锁或者在等待期间内拿到了锁则返回true，等待期间可被中断。
+    boolean tryLock(long time, TimeUnit unit) throws InterruptedException;
+    //用来释放锁，Lock 不会主动释放锁，需要手动调用此方法，一般写在 finally 语句中。
+    void unlock();
+    //创建一个 Lock 的 Condition。
+    Condition newCondition();
+}
+```
+ReentrantLock 和 synchronized 一样是一个可重入锁，也是唯一一个实现了 Lock 接口的类且提供了更多的方法的锁实现类。
+
+ReadWriteLock 接口及其主要实现类都位于 java.util.concurrent.locks 包下，ReadWriteLock 的主要方法如下：
+```java
+//将文件的读写操作分开，分成2个锁来分配给线程，从而使得多个线程可以同时进行读操作。
+public interface ReadWriteLock {
+    //获取读锁
+    Lock readLock();
+    //获取写锁
+    Lock writeLock();
+}
+```
+ReentrantReadWriteLock 是 ReadWriteLock 接口的实现类，里面提供了很多丰富的方法，主要的 readLock() 和 writeLock() 方法用来获取读锁和写锁，效率比 synchronized 高很多，尤其在并发读文件情况下；不过要注意的是如果有一个线程已经占用了读锁则此时其他线程如果要申请写锁则申请写锁的线程会一直等待释放读锁，如果有一个线程已经占用了写锁则此时其他线程如果申请写锁或者读锁则申请的线程会一直等待释放写锁。
+
+### **59.什么是乐观锁，什么是悲观锁？**
 
 ### **.谈谈 Java 的 NIO 与内存映射，线程原子性、有序性、可见性，生产消费者模式 wait、notify 和 concurrent 方式的实现，**
 
