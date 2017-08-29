@@ -1657,13 +1657,55 @@ volatile 常见的使用场景为多线程自定义条件标记变量中断和�
 
 原子变量就是原子操作，是在多线程环境下避免数据不一致必须的手段，譬如`int++`就不是一个原子操作，因为当一个线程读取它的值并加 1 时另外一个线程有可能会读到之前的值而引发错误，所以为了解决这个问题就必须保证增加操作是原子操作，在 JDK1.5 之前可以使用 synchronized 同步技术来做到原子操作（成本太高，需要获取释放锁，获取不到锁还要等待，还有线程的上下文切换操作），而在 JDK1.5 的 java.util.concurrent.atomic 包中 Java 提供了可以自动保证是原子操作且不需要使用 synchronized 同步的实现类。
 
+synchronized 是一种阻塞式算法的悲观锁，但是原子变量的更新逻辑是非阻塞式乐观的，synchronized 得不到锁就会进入等待状态和有线程切换开销，原子变量更新冲突时会循环重试，不会阻塞和上下文切换开销。
+
 java 提供的原子变量类型都在 java.util.concurrent.atomic 包下面，基本的有 AtomicBoolean（原子布尔类型）、AtomicInteger（原子Integer类型）、AtomicLong（原子Long类型）、AtomicReference（原子引用类型），针对基本的对应的数组类型有 AtomicIntegerArray、AtomicLongArray、AtomicReferenceArray，为了便于以原子方式更新对象中字段而增加的类型有 AtomicIntegerFieldUpdater、AtomicLongFieldUpdater、AtomicReferenceFieldUpdater，AtomicReference 还有两个类似的类 AtomicMarkableReference、AtomicStampedReference，对于 char、short、float、double 类型如果我们需要可以转换（floatToIntBits）为 int 或者 long 来使用。
 
 ### **57.简单谈谈你对 CAS 的认识和理解？**
 
 解析：
 
-java.util.concurrent.atomic包下的原子操作类都是基于CAS实现的
+CAS（compare and swap）实质就是比较交换策略，设计并发算法时常用到的一种技术，java.util.concurrent 包基本都建立在 CAS 之上，现代的处理器基本都支持 CAS，只是不同厂商实现不同而已；CAS 有内存值V、旧的预期值A、要修改的值B三个操作数，当且仅当预期值A和内存值V相同时才会将内存值修改为B并返回 true，否则什么也不做且返回 false。
+
+CAS 是通过 Unsafe 类来实现的，Unsafe 提供了硬件级别的原子操作，关于 CAS 的方法主要是 native 的 compareAndSwapObject、compareAndSwapInt、compareAndSwapLong，其比较交换是一组原子操作，因为是硬件级别的操作，所以效率会高一些。
+
+CAS 最常见和基础的使用地方在 java.util.concurrent.atomic 包下面，譬如 AtomicInteger 使用 CAS 的实质如下（基于JDK 1.8之前，1.8开始已经再次优化了，看不见阻塞的逻辑了）：
+```java
+public class AtomicInteger extends Number implements java.io.Serializable {
+    //Unsafe 是 CAS 的核心类
+    private static final sun.misc.Unsafe unsafe = sun.misc.Unsafe.getUnsafe();
+    //valueOffset 在 static 代码块中通过 Unsafe 获取 value 变量在内存中的偏移地址。
+    //因为 Unsafe 是通过 valueOffset 内存偏移地址来获取数据的原始值的。
+    private static final long valueOffset;
+    //获取变量的偏移地址
+    static {
+        try {
+            valueOffset = unsafe.objectFieldOffset
+                (AtomicInteger.class.getDeclaredField("value"));
+        } catch (ReflectiveOperationException e) {
+            throw new Error(e);
+        }
+    }
+    //volatile修饰保证了 value 变量的可见性和有序性
+    private volatile int value;
+
+    public final int incrementAndGet() {
+        //原子更新成功为止才返回
+        for (;;) {
+            int current = get();
+            int next = current + 1;
+            if (compareAndSet(current, next))
+                return next;
+            }
+        }
+    }
+}
+```
+可以发现基于 CAS 可以实现乐观的非阻塞算法的 Java atomic 原子变量，除此之外还可以实现悲观阻塞式算法，譬如锁机制等。
+
+CAS 策略算法其实有个致命的 ABA 问题，如果一个变量 V 初次读取时值为 A，并且在准备赋值时检查到仍然是 A，而这时候又在多线程的场景下我们是无法确认这段时间之内是否值被其他线程先修改为 B 接着改回了 A，所以 CAS 就会在这种场景下误认为变量从来没被修改过，也就是 ABA 问题了，这个问题一般是没啥影响的，如果程序逻辑需要处理 ABA 场景就可以使用 AtomicStampedReference，在修改值的同时传入一个唯一标记（譬如时间戳），只有值和标记都想等才进行修改，使用 AtomicMarkableReference 也可以，只不过标记是 boolean 类型。
+
+
 
 ### **58.什么是乐观锁，什么是悲观锁？**
 
