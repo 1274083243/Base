@@ -1769,7 +1769,13 @@ ReentrantReadWriteLock 是 ReadWriteLock 接口的实现类，里面提供了很
 
 可中断锁：synchronized 是不可中断的，Lock 是可中断的，这里的可中断建立在阻塞等待中断，运行中是无法中断的。
 
-### **60.？**
+### **60.简单谈谈你对 Java 并发显式协作 Condition 的 await、signal、signalAll 理解？同时说说他们和普通并发协作 wait、notify、notifyAll 等方法的区别？**
+
+解析：
+
+我们知道 java　显式锁　Lock 可以认为是对　synchronized　的升级，所以　java　显式协作 Condition 的 await、signal、signalAll 也可以说是普通并发协作 wait、notify、notifyAll 的升级；普通并发协作 wait、notify、notifyAll 需要与　synchronized　配合使用，显式协作 Condition 的 await、signal、signalAll 需要与显式锁　Lock 配合使用。
+
+### **61.?**
 
 ### **.谈谈 Java 的 NIO 与内存映射，线程原子性、有序性、可见性，生产消费者模式 wait、notify 和 concurrent 方式的实现，**
 
