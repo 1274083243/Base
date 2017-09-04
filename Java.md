@@ -178,14 +178,20 @@ for (int i=0; i<100; i++) {
 String s1 = "abc";
 StringBuffer s2 = new StringBuffer(s1);
 System.out.println(s1.equals(s2));
+
+StringBuffer s3 = new StringBuffer("abc");
+System.out.println(s3.equals("abc"));
+System.out.println(s3.toString().equals("abc"));
 ```
 **结果：**
 
-false。
+第一个打印为　false。
+第二个打印为　false。
+第三个打印为　true。
 
 **原因:**
 
-考 String 的 equals 方式，equals 方法进行了 instance of 判断。
+第一个考 String 的 equals 方式，equals 方法进行了 instance of 判断。第二个 s3.equals　为　Object　类型，所以实现为　＝＝　判断，故　false。第三个就是常规套路了。
 
 ### **8.下面的题目结果是什么?**
 ```java
@@ -1790,11 +1796,31 @@ ReentrantReadWriteLock 是 ReadWriteLock 接口的实现类，里面提供了很
 
 和　wait　一样，await　在进入等待队列后会释放锁和　cpu，当被其他线程唤醒或者超时或中断后都需要重新获取锁，获取锁后才会从　await　方法中退出，await　同样和　wait　一样存在等待返回不代表条件成立的问题，所以也需要主动循环条件判断；await　提供了比　wait　更加强大的机制，譬如提供了可中断或者不可中断的　await　机制等；特别注意　Condition　也有　wait、notify、notifyAll　方法，因为其也是　Object，所以在使用显式协作机制时千万不要和 synchronized 情况下的协作机制混合使用，避免出现诡异问题。
 
-### **61.简单谈谈你对　java 线程本地变量　ThreadLocal　的认识和实现原理及使用场景?**
+### **61.简单谈谈你对　ThreadLocal　的认识？其与同步机制有何区别？其实现原理及使用场景和存在的问题有哪些?**
 
 解析：
 
-这算是作为　Android　开发在面试时被问得比较多的一道题了，其实是很简单的，只要你用心体会过就知道怎么回事了。
+这算是作为　Android　开发在面试时被问得比较多的一道题了，其实是很简单的，只要你用心体会过就知道怎么回事了；总之　ThreadLocal　不使用来解决对象共享访问问题的，而是线程本地变量，其　set 的对象作用域为当前线程内部，生命周期伴随线程执行而终止，多个线程间不共享，切记将　ThreadLocal　理解成多线程变量副本的认知是绝对错误的，没有副本这一操作，ThreadLocal　中　set　进去的对象依然是引用方式而不是复制拷贝，所以谈不上副本，所以一般不建议　ThreadLocal　的　set　参数传递共享对象；ThreadLocal　特别适合会被多线程调用框架的编写，可以很容易解决框架中当前线程本地变量的效果；ThreadLocal 是一个泛型类，其提供的主要方法如下：
+```java
+public T get() :获取值，如果没有返回　null。
+public void set(T) :设置值。
+protected T initialValue() :用于提供初始值，当调用　get　方法时如果之前没有设置过则会调用该方法获取初始值，默认为　null。
+public void remove() :删掉当前线程对应的值，如果删掉后再次调用　get　则会再调用　initialValue　获取初值。
+```
+
+ThreadLocal　和同步机制面对的是不同场景的问题，严格说两者没有任何关系，同步机制是为了同步多线程对相同资源的并发访问，是为了线程间数据共享的问题，而　ThreadLocal　是隔离多线程数据共享，从根本上就不在多个线程之间共享资源，这样自然就不需要多线程的同步机制了，所以还是一句话，两者没有一毛钱的关系，需求场景不同，甚至需求有些互斥。
+
+每个线程　Thread　都有一个类型为　ThreadLocalMap　的　Map，调用　set　实际上是在线程自己的　Map　里设置了一个条目，键为当前　ThreadLocal　实例，值为　set　方法的泛型　value　参数，别的线程此时调用　get　是拿不到的，只有当前线程拿到当前线程设置的，ThreadLocalMap　是一个专门用于　ThreadLocal　的一个静态内部类，与一般的　Map 不同（和一般　Map　也没有继承等任何关系），它的键类型为`WeakReference<ThreadLocal>`；其　get　方法的实现是拿到当前线程的　ThreadLocalMap　引用，以当前　ThreadLocal　实例为键从　Map　中获取条目取其　value　值，如果　Map　中没有就返回　initialValue　方法初始化的值；所以通过每个　Thread　自己的　Map　存取　value　就达到了线程本地变量的效果。
+
+ThreadLocal　的使用场景核心原则就是按线程多实例（每个线程对应一个实例）的对象访问，并且这个对象很多地方都会用到，譬如　Android 的　Looper　实现等，达到每个线程只初始化一次对应实例等效果，其他应用场景譬如解决数据库连接，Session　管理等。
+
+ThreadLocal　使用要注意的问题主要如下：
+
+一般使用　ThreadLocal　都不会将共享变量放到线程的　ThreadLocal　中，因为存放共享变量依旧需要我们手动解决并发问题且和直接传递使用没有啥实质区别，一般存放到　ThreadLocal　的变量都是当前线程本身就独一无二的一个变量，其他线程本身就无法访问。
+
+使用　ThreadLocal　配合线程池使用时要特别注意，线程池中的线程是复用的机制，线程池中线程在执行完一个任务执行下一个任务（复用线程情况下，线程池没满未复用不会）时其中的　ThreadLocal　对象并不会被清空，所以　set　的值会被带到下一个任务中，所以这种情况下一定要记得使用　ThreadLocal　前先复位初值或者使用后　remove　清空。
+
+### **62.？**
 
 
 ReentrantLock机制原理，ReentrantLock的newCondition机制原理
