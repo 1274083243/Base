@@ -1820,10 +1820,28 @@ ThreadLocal　使用要注意的问题主要如下：
 
 使用　ThreadLocal　配合线程池使用时要特别注意，线程池中的线程是复用的机制，线程池中线程在执行完一个任务执行下一个任务（复用线程情况下，线程池没满未复用不会）时其中的　ThreadLocal　对象并不会被清空，所以　set　的值会被带到下一个任务中，所以这种情况下一定要记得使用　ThreadLocal　前先复位初值或者使用后　remove　清空。
 
-### **62.？**
+### **62.什么是 CopyOnWriteArrayList，它与 ArrayList 有何不同？同理说说　CopyOnWriteArraySet。**
+
+解析：
+
+CopyOnWriteArrayList　是　ArrayList　的一个线程安全的变体，其中所有可变操作（add、set　等等）都是通过对底层数组进行一次新的复制来实现的，相比较于　ArrayList　它的写操作要慢一些，因为　CopyOnWriteArrayList　中写操作需要大面积复制数组，所以性能肯定很差，但是读操作因为操作的对象和写操作不是同一个对象，读之间也不需要加锁，读和写之间的同步处理只是在写完后通过一个简单的　"="　将引用指向新的数组对象上来，这个几乎不需要时间，这样读操作就很快很安全且适合在多线程里使用且不会发生　ConcurrentModificationException，不过其迭代器不支持修改操作和依赖迭代器修改的操作（譬如 Collections　的　sort 方法），因此　CopyOnWriteArrayList　适合使用在读操作远远大于写操作且数据量不是特别庞大（每次写都是一次复制）的场景里，比如缓存等。
+
+CopyOnWriteArrayList　的内部实现依然是一个　volatile　的数组，这个数组每次是以原子方式被整体更新的（譬如　add, remove, set, sort　操作都是基于锁机制的，jdk　和　openjdk　的锁方式不一样，openjdk　使用　ReentrantLock，jdk　使用　synchronized），每次修改操作都会新建一个数组将原数组复制过来修改后将引用指向新建的数组，这就是写时拷贝，所有读操作都是直接访问当前引用数组。我们常见的同步线程安全方式都是　synchronized 和　Lock　和循环　CAS，而　CopyOnWriteArrayList　的写时拷贝对于线程安全提供了新的思路，只是这种方式代价略大。
+
+对于　CopyOnWriteArraySet　实现了 Set 接口，线程安全，其特点就是不包含重复元素，其内部实现是通过　CopyOnWriteArrayList　来的，而　Android　的　ArraySet　（Java 没有这个类）内部实现依然是数组而不是基于　ArrayList，注意区分，TreeSet\HashSet\LinkedHashSet 是非线程安全的，所以　CopyOnWriteArraySet　同样适合读多于写且数据集不大的场合，在大多数场合下这些写时拷贝的线程安全集合效率都比　Collections 中同步集合构造器低。
+
+### **63.xxxx**
+
+### **63.谈谈你对 Thread，Runnable，Callable，Eeecutor，ExecutorService，Future　的理解？**
+
+解析：
+
+
 
 
 ReentrantLock机制原理，ReentrantLock的newCondition机制原理
+
+反射的原理（method\invok）＼finalize原理＼
 
 ### **.谈谈 Java 的 NIO 与内存映射，线程原子性、有序性、可见性，生产消费者模式 wait、notify 和 concurrent 方式的实现，**
 
