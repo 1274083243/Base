@@ -1830,7 +1830,19 @@ CopyOnWriteArrayList　的内部实现依然是一个　volatile　的数组，�
 
 对于　CopyOnWriteArraySet　实现了 Set 接口，线程安全，其特点就是不包含重复元素，其内部实现是通过　CopyOnWriteArrayList　来的，而　Android　的　ArraySet　（Java 没有这个类）内部实现依然是数组而不是基于　ArrayList，注意区分，TreeSet\HashSet\LinkedHashSet 是非线程安全的，所以　CopyOnWriteArraySet　同样适合读多于写且数据集不大的场合，在大多数场合下这些写时拷贝的线程安全集合效率都比　Collections 中同步集合构造器低。
 
-### **63.xxxx**
+### **63.说说你对　java Map　家族中　ConcurrentHashMap　的理解？**
+
+解析：
+
+Map　的　HashMap　和　LinkedHashMap　等都是非线程安全的，而　Hashtable 和　Collections　的同步　Map 方式都是使用了方法及别的粗粒度锁机制，ConcurrentHashMap　却另辟蹊径实现了一种比较高效的线程安全　Map。
+
+jdk 1.6　与　1.7 采用了分段锁　Segment(ReentrantLock　的子类)　与　HashEntry　结合的机制，只有在同一个分段内才会存在竞争，不同的分段锁之间没有竞争，所以分段锁提高了并发的效率，但是由于不是对　Map　整体加锁所以导致一些需要扫描整个　Map　的方法（size, containsValue）需要使用特殊的实现，另一些方法(clear)甚至直接放弃了对一致性的要求，所以说这些版本的　ConcurrentHashMap　实现是弱一致性的；Segment　数组的每个元素类似　HashMap　的结构，即内部拥有一个　HashEntry　数组，数组中每个元素又是一个链表，所以　ConcurrentHashMap　的并发度就是分段锁 Segment 数组的长度，默认为　16，构造可设置。
+
+jdk 1.8　对　ConcurrentHashMap　进行了重新实现，由原来的一千多行代码变成了六千多行，放弃了分段锁的思路而采用了　Node + CAS + synchronized 的新思路来保证线程的安全，所以对于　Node 的锁粒度明显比　1.6　中对于分段锁的粒度还要小。
+
+关于具体深度理解可以参考 [深入并发包 ConcurrentHashMap](http://www.importnew.com/26049.html) 一文。
+
+###**64.**
 
 ### **63.谈谈你对 Thread，Runnable，Callable，Eeecutor，ExecutorService，Future　的理解？**
 
