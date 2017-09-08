@@ -1834,7 +1834,7 @@ CopyOnWriteArrayList　的内部实现依然是一个　volatile　的数组，�
 
 解析：
 
-Map　的　HashMap　和　LinkedHashMap　等都是非线程安全的，而　Hashtable 和　Collections　的同步　Map 方式都是使用了方法及别的粗粒度锁机制，ConcurrentHashMap　却另辟蹊径实现了一种比较高效的线程安全　Map。
+Map　的　HashMap　和　LinkedHashMap　等都是非线程安全的，而　Hashtable 和　Collections　的同步　Map 方式都是使用了方法及别的粗粒度锁机制，ConcurrentHashMap　却另辟蹊径实现了一种比较高效的无序线程安全　Map，并发迭代器不会抛出异常。
 
 jdk 1.6　与　1.7 采用了分段锁　Segment(ReentrantLock　的子类)　与　HashEntry　结合的机制，只有在同一个分段内才会存在竞争，不同的分段锁之间没有竞争，所以分段锁提高了并发的效率，但是由于不是对　Map　整体加锁所以导致一些需要扫描整个　Map　的方法（size, containsValue）需要使用特殊的实现，另一些方法(clear)甚至直接放弃了对一致性的要求，所以说这些版本的　ConcurrentHashMap　实现是弱一致性的；Segment　数组的每个元素类似　HashMap　的结构，即内部拥有一个　HashEntry　数组，数组中每个元素又是一个链表，所以　ConcurrentHashMap　的并发度就是分段锁 Segment 数组的长度，默认为　16，构造可设置。
 
@@ -1842,7 +1842,20 @@ jdk 1.8　对　ConcurrentHashMap　进行了重新实现，由原来的一千�
 
 关于具体深度理解可以参考 [深入并发包 ConcurrentHashMap](http://www.importnew.com/26049.html) 一文。
 
-###**64.**
+###**64.说说你对　ConcurrentSkipListMap　和　ConcurrentSkipListSet　的理解？**
+
+解析：
+
+基于细粒度锁线程安全的　ConcurrentHashMap　是不支持有序的，而　TreeMap 和　TreeSet 是有序的但线程不安全，所以　java 并发包提供了与之对应线程安全有序的　ConcurrentSkipListMap（ConcurrentNavigableMap　接口的实现类）　和　ConcurrentSkipListSet；TreeSet　是基于　TreeMap　实现的，ConcurrentSkipListSet　是基于　ConcurrentSkipListMap　实现的（value　用一个 True　值替换了而已），ConcurrentSkipListMap　是基于　SkipList　和　CAS 实现的，主要操作的复杂度都是 O(log(N))，SkipList　是基于跳跃表的一种数据结构算法，使用这个算法可以更易于实现高效并发算法；ConcurrentHashMap　没有使用锁，所有操作都是无阻塞的，所有操作（包括写）都可以并行，迭代器不会抛出异常（ConcurrentModificationException），数据是弱一致的，迭代可能反映最新修改也可能不反映，一些方法（putAll, clear）不是原子的。
+
+ConcurrentSkipListMap　使用的　SkipList　跳表结构是基于链表的，在链表的基础上加了多层索引结构而已，高层索引节点少，低层多，对于每个索引节点有两个指针，一个向右指向下一个同层的索引节点，另一个向下指向下一层索引节点或者基本链表节点，快速查找时由高层到低层每次二分法查找，速度非常块。
+
+想要了解更多可以查看[跳表（SkipList）及ConcurrentSkipListMap源码解析](http://blog.csdn.net/sunxianghuang/article/details/52221913)一文。
+
+
+###**65.说说**
+
+
 
 ### **63.谈谈你对 Thread，Runnable，Callable，Eeecutor，ExecutorService，Future　的理解？**
 
