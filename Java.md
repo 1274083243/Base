@@ -1842,7 +1842,7 @@ jdk 1.8　对　ConcurrentHashMap　进行了重新实现，由原来的一千�
 
 关于具体深度理解可以参考 [深入并发包 ConcurrentHashMap](http://www.importnew.com/26049.html) 一文。
 
-###**64.说说你对　ConcurrentSkipListMap　和　ConcurrentSkipListSet　的理解？**
+###　**64.说说你对　ConcurrentSkipListMap　和　ConcurrentSkipListSet　的理解？**
 
 解析：
 
@@ -1853,11 +1853,18 @@ ConcurrentSkipListMap　使用的　SkipList　跳表结构是基于链表的，
 想要了解更多可以查看[跳表（SkipList）及ConcurrentSkipListMap源码解析](http://blog.csdn.net/sunxianghuang/article/details/52221913)一文。
 
 
-###**65.说说**
+###　**65.简单说说你所知道或者用过的　java　队列都有哪些？各自有何特点？**
+
+解析：
 
 
+###　**66.**
 
-### **63.谈谈你对 Thread，Runnable，Callable，Eeecutor，ExecutorService，Future　的理解？**
+###　**67.**
+
+###　**68.**
+
+### **69.谈谈你对 Thread，Runnable，Callable，Eeecutor，ExecutorService，Future　的理解？**
 
 解析：
 
