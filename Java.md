@@ -1856,6 +1856,81 @@ ConcurrentSkipListMap　使用的　SkipList　跳表结构是基于链表的，
 
 解析：
 
+java　的队列主要分为　Queue　和　Deque　双端队列，Queue　扩展了　Collection　接口，Deque　扩展了　Queue　接口，他们都是　java　的集合类接口，其支持　Collection　操作外还支持队列或者双端队列提供的其他操作。
+
+Queue　接口的每个方法都提供两种形式，一种在操作失败时抛出异常，另一种操作失败时返回特殊值，特有的接口方法如下：
+```java
+boolean add(E e)    //插入队列，如果立即返回且未超容返回　true，否则抛出异常
+boolean offer(E e)  //插入队列，不会抛出异常
+E remove()      //获取并移除此队列的头，如果队列已空执行此操作抛出异常
+E poll()        //获取并移除此队列的头，如果队列已空执行则返回 null
+E element()     //获取但不移除此队列的头，如果队列已空执行此操作抛出异常
+E peek()        //获取但不移除此队列的头，如果队列已空执行则返回 null
+```
+所以我们使用　Queue　时要尽量避免使用会抛出异常的方法，值得注意的是　LinkedList 类也实现了　Queue　和　Deque，所以要留意。
+
+Deque　接口是一个线性的双端队列，支持在两端插入和删除元素，大多数时候　Deque　的实现对于容量没有限制，但是该接口可支持容量限制或者不限制操作，Deque　接口的每个方法都提供两种形式，一种在操作失败时抛出异常，另一种操作失败时返回特殊值，特有的接口方法如下：
+```java
+void addFirst(E e)
+boolean offerFirst(E e)
+void addLast(E e)
+boolean offerLast(E e)
+E removeFirst()
+E pollFirst()
+E removeLast()
+E pollLast()
+E getFirst()
+E peekFirst()
+E getLast()
+E peekLast()
+```
+Deque 接口继承自　Queue　的方法在大多数情况下等同上面的操作，所以建议使用　Deque 时尽量使用其特有的方法，值得注意的是　LinkedList 类也实现了　Queue　和　Deque，所以要留意。
+
+关于　Queue　与　Deque　的实现类主要可以分为非线程安全和线程安全两大类，非线程安全的队列主要如下：
+
+|非线程安全队列|说明|
+|--|--|
+|LinkedList||
+|PriorityQueue||
+|ArrayDeque||
+
+线程安全的并发队列（位于　java　并发包下面）主要有如下（下面这些对列迭代都不抛出　ConcurrentModificationException，都是弱一致的）：
+
+|并发安全队列|特性|说明|
+|--|--|--|
+|ConcurrentLinkedQueue|无锁非阻塞并发队列||
+|ConcurrentLinkedDeque|无锁非阻塞并发队列||
+|ArrayBlockingQueue|基于数组的普通阻塞队列||
+|LinkedBlockingQueue|基于链表的普通阻塞队列||
+|LinkedBlockingDeque|基于链表的普通阻塞队列||
+|PriorityBlockingQueue|优先级阻塞队列||
+|DelayQueue|延时阻塞队列||
+|LinkedTransferQueue|其他阻塞队列||
+|SynchronousQueue|其他阻塞队列||
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### **66.？**
 
 
 ### **69.谈谈你对 Thread，Runnable，Callable，Eeecutor，ExecutorService，Future　的理解？**
