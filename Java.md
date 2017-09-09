@@ -1905,9 +1905,10 @@ Deque 接口继承自　Queue　的方法在大多数情况下等同上面的操
 |LinkedBlockingDeque|基于双向链表线程安全阻塞队列|可指定长度也可不指定，默认无长度，其实现依赖一个　ReentrantLock　和两个　Condition（一个队列满条件，一个队列空条件），并发安全是因为很多操作都基于　ReentrantLock　锁实现，阻塞是可以被中断的，阻塞等待也是可以设置超时机制的，不存在头哨兵节点；典型用法就是生产消费者。|
 |PriorityBlockingQueue|优先级阻塞并发队列|基于数组且基于　Comparable　或　Comparator　的无限容量并发阻塞优先级队列，放入的元素不可为空；如果队列已经空了继续进行取操作则会阻塞，如果没空且放置操作一直进行则可能会造成队列爆掉，所以该队列不会阻塞数据生产者，其大多数操作方法实现依赖一个　ReentrantLock　锁和一个　Condition（队列空条件），不过要特别注意其每次添加元素遇到队列数组扩容操作时会有一个基于　CAS　的自旋锁操作以避免并发申请调整大小，由于需要在扩容申请新内存的过程中退出锁，所以不可以将任务简单的委托给一个　PriorityQueue　来完成，为了保证兼容性在序列话的过程中使用了锁，为了增加保证兼容性，在序列化的过程中需要付出双倍的代价（先转换成一个　PriorityQueue　然后再序列化）。|
 |DelayQueue|延时阻塞并发优先级队列|无界队列，故生产者永远不会被阻塞，消费者元素延迟时间未到才会阻塞，队列中的元素只有当其指定的延迟时间到了才能够从队列中获取到该元素，其实现依赖一把　ReentrantLock　锁和一个　Condition　条件，其存储基于　PriorityQueue　队列。|
-|LinkedTransferQueue|其他阻塞队列||
-|SynchronousQueue|其他阻塞队列||
+|SynchronousQueue|其他阻塞队列|基于无锁算法保证并发安全及性能，是一个没有数据缓冲的阻塞队列，生产者对其插入操作必须等待消费者的移除操作，反过来也一样，不像　ArrayBlockingQueue　或　LinkedListBlockingQueue，SynchronousQueue　内部并没有数据缓存空间，不能调用　peek　方法来看队列中是否有数据元素，因为数据元素只有当你试着取走的时候才可能存在，不取走而只想偷窥一下是不行的，当然遍历这个队列的操作也是不允许的，可以理解为生产者和消费者互相等待对方握手然后一起离开；一个典型的使用场景是在　Executors.newCachedThreadPool()　里面，这个线程池根据需要（新任务到来时）创建新的线程，如果有空闲线程则会重复使用，线程空闲了　60　秒后会被回收。|
+|LinkedTransferQueue|其他阻塞队列|基于　CAS 和单向链表无界先进先出队列，不怎么常用，jdk 1.7 出现，具体可以[参考此文](http://www.cnblogs.com/rockman12352/p/3790245.html)。|
 
+### **66.简？**
 
 
 
