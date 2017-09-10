@@ -2024,6 +2024,20 @@ public class Executors {
 
 ### **67.谈谈你对 java 线程池 ThreadPoolExecutor 与 ScheduledThreadPoolExecutor 的理解及相关参数的简单介绍？**
 
+解析：
+
+线程池由任务队列和工作线程组成，它可以重用线程来避免线程创建的开销，在任务过多时通过排队避免创建过多线程来减少系统资源消耗和竞争，确保任务有序完成；ThreadPoolExecutor 继承自 AbstractExecutorService 实现了 ExecutorService 接口，ScheduledThreadPoolExecutor 继承自 ThreadPoolExecutor 实现了 ExecutorService 和 ScheduledExecutorService 接口；ThreadPoolExecutor 有一些重要的参数来控制我们合理的使用线程池，所以我们有必要看下这些参数的含义：
+```java
+//有多个构造方法，最终都指向这个最多参数的构造方法
+public ThreadPoolExecutor(int corePoolSize,
+                              int maximumPoolSize,
+                              long keepAliveTime,
+                              TimeUnit unit,
+                              BlockingQueue<Runnable> workQueue,
+                              ThreadFactory threadFactory,
+                              RejectedExecutionHandler handler) {...}
+```
+http://blog.csdn.net/u010723709/article/details/50372322
 
 ### **68.简单说说 CompletionService 的作用和使用场景？**
 
@@ -2031,6 +2045,14 @@ public class Executors {
 
 ### **69.Timer、TimeTask的问题？**
 
+### **70.并发协作工具类？**
+
+
+### **71.ReentrantLock机制原理，ReentrantLock的newCondition机制原理？**
+
+
+
+### **72.动态特性题目？**
 
 
 
@@ -2038,27 +2060,10 @@ public class Executors {
 
 
 
-
-
-
-
-
-
-
-
-
-### **69.谈谈你对 Thread，Runnable，Callable，Eeecutor，ExecutorService，Future　的理解？**
-
-解析：
-
-
-
-
-ReentrantLock机制原理，ReentrantLock的newCondition机制原理
 
 反射的原理（method\invok）＼finalize原理＼
 
-### **.谈谈 Java 的 NIO 与内存映射，线程原子性、有序性、可见性，生产消费者模式 wait、notify 和 concurrent 方式的实现，**
+### **.谈谈 Java 的 NIO 与内存映射，，**
 
 
 并发问题
