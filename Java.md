@@ -1796,6 +1796,8 @@ ReentrantReadWriteLock 是 ReadWriteLock 接口的实现类，里面提供了很
 
 和　wait　一样，await　在进入等待队列后会释放锁和　cpu，当被其他线程唤醒或者超时或中断后都需要重新获取锁，获取锁后才会从　await　方法中退出，await　同样和　wait　一样存在等待返回不代表条件成立的问题，所以也需要主动循环条件判断；await　提供了比　wait　更加强大的机制，譬如提供了可中断或者不可中断的　await　机制等；特别注意　Condition　也有　wait、notify、notifyAll　方法，因为其也是　Object，所以在使用显式协作机制时千万不要和 synchronized 情况下的协作机制混合使用，避免出现诡异问题。
 
+使用实例参见：https://stackoverflow.com/questions/2536692/a-simple-scenario-using-wait-and-notify-in-java
+
 ### **61.简单谈谈你对　ThreadLocal　的认识？其与同步机制有何区别？其实现原理及使用场景和存在的问题有哪些?**
 
 解析：
