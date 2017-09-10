@@ -1908,7 +1908,128 @@ Deque 接口继承自　Queue　的方法在大多数情况下等同上面的操
 |SynchronousQueue|其他阻塞队列|基于无锁算法保证并发安全及性能，是一个没有数据缓冲的阻塞队列，生产者对其插入操作必须等待消费者的移除操作，反过来也一样，不像　ArrayBlockingQueue　或　LinkedListBlockingQueue，SynchronousQueue　内部并没有数据缓存空间，不能调用　peek　方法来看队列中是否有数据元素，因为数据元素只有当你试着取走的时候才可能存在，不取走而只想偷窥一下是不行的，当然遍历这个队列的操作也是不允许的，可以理解为生产者和消费者互相等待对方握手然后一起离开；一个典型的使用场景是在　Executors.newCachedThreadPool()　里面，这个线程池根据需要（新任务到来时）创建新的线程，如果有空闲线程则会重复使用，线程空闲了　60　秒后会被回收。|
 |LinkedTransferQueue|其他阻塞队列|基于　CAS 和单向链表无界先进先出队列，不怎么常用，jdk 1.7 出现，具体可以[参考此文](http://www.cnblogs.com/rockman12352/p/3790245.html)。|
 
-### **66.简？**
+### **66.简单谈谈你对　Java　的　Runnable、Callable、Future、Executor、ExecutorService、Executors、FutureTask 认识和理解？**
+
+解析：
+
+Runnable、Callable 都表示要执行的异步任务的接口，都提供了一个接口方法，Runnable 没有返回值且不会抛出异常，Callable 有返回值且会抛出异常；Executor 是一个执行任务接口，其定义了一个接收 Runnable 对象的方法；ExecutorService 是继承 Executor 接口执行任务的更广泛的接口，其提供了生命周期管理的方法以及可跟踪一个或多个异步任务执行状况返回 Future 的方法；AbstractExecutorService 是 ExecutorService 接口执行方法的默认抽象实现类；ScheduledExecutorService 是继承 ExecutorService 拓展的一个可定时调度任务接口；ScheduledThreadPoolExecutor 是 ScheduledExecutorService 接口的实现类，用来表示一个可定时调度任务的线程池；ThreadPoolExecutor 线程池是基于 AbstractExecutorService 的实现类；可以通过调用 Executors 以其提供的静态工厂方法来创建线程池并返回一个 ExecutorService 对象；Future 表示异步任务的状态结果；FutureTask 是 Future 和 Runnable 的实现类，所以 FutureTask 可以交给 Executor 执行，也可以由调用线程直接执行 FutureTask.run 方法，FutureTask 的 run 方法中又会调用 Callable 的 call 方法，FutureTask 有一个回调函数 done 方法，当一个任务执行结束后会回调这个方法，我们可以在 done 方法中调用 FutureTask 的 get 方法来获得计算的结果，这样就不会因为主动调用 get 被阻塞等待了。
+```java
+public interface Runnable {
+    //无返回值且不会抛出异常的任务实现方法
+    public abstract void run();
+}
+
+public interface Callable<V> {
+    ////有返回值且会抛出异常的任务实现方法
+    V call() throws Exception;
+}
+
+public interface Executor {
+    //最简单的执行服务接口，可执行一个无返回的Runnable，接口无限定，方法实现可以使线程池也可以是每次new线程执行等，只是一个规范
+    void execute(Runnable command);
+}
+
+public interface ExecutorService extends Executor {
+    //关闭执行服务，不阻塞，返回不代表所有任务已结束，表示不再接收新任务，但是已经提交的任务还会继续执行，即使任务还未开始执行
+    void shutdown();
+    //关闭执行服务，不阻塞，返回不代表所有任务已结束，表示不再接收新任务且已提交但尚未执行的任务会被终止，对于正在执行的任务一般会调用interrupt方法尝试中断，该方法会返回已提交但尚未执行的任务列表
+    List<Runnable> shutdownNow();
+    //调用 shutdown 和 shutdownNow 后该方法一定返回 true，返回不代表所有任务已结束
+    boolean isShutdown();
+    //获取所有任务是否已经结束，当调用shutdown或者shutdownNow方法后，并且所有提交的任务完成后返回为true
+    boolean isTerminated();
+    //阻塞等待所有任务结束，可以设置timeout，如果超时了所有任务还未完成则返回false，反之
+    boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException;
+    //提交一个Callable有返回值类型的任务，返回值为Future，提交后立即返回，返回不代表任务已经执行，通过Future可以查询提交的任务状态、获取返回值、取消任务等
+    <T> Future<T> submit(Callable<T> task);
+    //提交一个Runnable无返回值类型的任务，返回值为Future，提交后立即返回，返回不代表任务已经执行，通过Future可以查询提交的任务状态、获取返回值（获取到的值取决于参数result）、取消任务等
+    <T> Future<T> submit(Runnable task, T result);
+    //提交一个Runnable无返回值类型的任务，返回值为Future，提交后立即返回，返回不代表任务已经执行，通过Future可以查询提交的任务状态、获取返回值（获取到的值为null）、取消任务等
+    Future<?> submit(Runnable task);
+    //阻塞批量提交任务，提交的任务容器列表和返回的Future列表存在顺序上有对应关系，当所有任务都完成时、调用线程被中断时返回
+    <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException;
+    //阻塞批量提交任务，超时则会取消所有没执行的任务，提交的任务容器列表和返回的Future列表存在顺序上有对应关系，当所有任务都完成时调用线程被中断时或者超过时限时都会返回结果，超过时限后，任何尚未完成的任务都会被取消，作为invokeAll的返回值，每个任务要么正常地完成，要么被取消
+    <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException;
+    //阻塞批量提交任务，有一类多线程编程模式场景为启动多个线程，相互独立的（无同步）去计算一个结果，当某一个线程得到结果之后，立刻终止所有线程，因为只需要一个结果就够了，这个方法就是用来解决这个问题的；也就是说只有有一个任务成功就会阻塞返回这个任务的结果，其他任务被取消
+    <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException;
+    //阻塞批量提交任务，同上，只是如果没有任何任务在规定timeout内返回则抛出异常
+    <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;
+}
+
+//Timer的优质替代品
+public interface ScheduledExecutorService extends ExecutorService {
+    //安排所提交的Runnable任务在initDelay指定的时间后执行。
+    public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit);
+    //安排所提交的Callable任务在initDelay指定的时间后执行。
+    public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit);
+    //安排所提交的Runnable任务按指定的间隔重复执行，如果任务执行过程中抛出了异常则ScheduledExecutorService就会停止执行任务且不会再周期地执行该任务了，所以你如果想保住任务都一直被周期执行，那么catch一切可能的异常。
+    public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit);
+    //安排所提交的Runnable任务在每次执行完后，等待delay所指定的时间后重复执行，如果任务执行过程中抛出了异常则ScheduledExecutorService就会停止执行任务且不会再周期地执行该任务了，所以你如果想保住任务都一直被周期执行，那么catch一切可能的异常。
+    public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit);
+    //终止可以使用返回的ScheduleFuture对象上的cancel方法，另外也一种选择是在run或者execute里根据条件抛异常，可参考 http://www.oschina.net/question/1158769_119659?sort=time 一文。
+}
+
+public interface Future<V> {
+    //用于取消异步任务，如果任务已经完成、已经取消、或者不能取消则返回false，反之true，如果任务还未开始则不再运行，如果任务已经运行则不一定能取消，mayInterruptIfRunning可以在任务运行中尝试中断任务，但不一定成功
+    boolean cancel(boolean mayInterruptIfRunning);
+    //表示任务是否被取消，只要cancel为true则该方法返回true，即便执行的任务线程还未真正结束
+    boolean isCancelled();
+    //表示任务是否结束，不管什么原因（正常结束、异常、中断、取消等）
+    boolean isDone();
+    //用于返回异步任务最终的执行结果，如果任务还未执行完（包含任务被中断、异常等）则阻塞等待
+    V get() throws InterruptedException, ExecutionException;
+    //用于返回异步任务最终的执行结果，如果任务还未执行完（包含任务被中断、异常等）或者到设置的timeout时间则阻塞等待
+    V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;
+}
+
+//线程池静态工厂类，提供方便的创建一些预配置的线程池，包装转换等操作。
+public class Executors {
+    //创建一个基于ThreadPoolExecutor参数为LinkedBlockingQueue的定长线程池，可控制线程最大并发数且可重用，超出的线程会在队列中等待。
+    public static ExecutorService newFixedThreadPool(int nThreads) {...}
+    public static ExecutorService newFixedThreadPool(int nThreads, ThreadFactory threadFactory) {...}
+    //1.8引入，创建持有足够线程的线程池来支持给定的并行级别，并通过使用多个队列减少竞争，它需要穿一个并行级别的参数，如果不传则被设定为默认的CPU数量。
+    public static ExecutorService newWorkStealingPool(int parallelism) {...}
+    public static ExecutorService newWorkStealingPool() {...}
+    //创建一个基于ThreadPoolExecutor参数为LinkedBlockingQueue的单线程化的线程池，它只会用唯一的工作线程来执行任务，保证所有任务按照指定顺序(FIFO, LIFO, 优先级)执行。
+    public static ExecutorService newSingleThreadExecutor() {...}
+    public static ExecutorService newSingleThreadExecutor(ThreadFactory threadFactory) {...}
+    //创建一个基于ThreadPoolExecutor参数为SynchronousQueue可缓存线程池，如果线程池长度超过处理需要，可灵活回收空闲线程，若无可回收则新建线程。
+    public static ExecutorService newCachedThreadPool() {...}
+    public static ExecutorService newCachedThreadPool(ThreadFactory threadFactory) {...}
+    //创建一个单例线程池，定期或延时执行任务。
+    public static ScheduledExecutorService newSingleThreadScheduledExecutor() {...}
+    public static ScheduledExecutorService newSingleThreadScheduledExecutor(ThreadFactory threadFactory) {...}
+    //创建一个基于ScheduledThreadPoolExecutor定长线程池，支持定时及周期性任务执行。
+    public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize) {...}
+    public static ScheduledExecutorService newScheduledThreadPool(
+            int corePoolSize, ThreadFactory threadFactory) {...}
+    //将普通线程池包装成不可配置的线程池，如果不想线程池被不明所以的后人修改可以调用这个方法。
+    public static ExecutorService unconfigurableExecutorService(ExecutorService executor) {...}
+    public static ScheduledExecutorService unconfigurableScheduledExecutorService(ScheduledExecutorService executor) {...}
+    //返回用于创建新线程的线程工厂
+    public static ThreadFactory defaultThreadFactory() {...}
+    //返回用于创建新线程的线程工厂，这些新线程与当前线程具有相同的权限
+    public static ThreadFactory privilegedThreadFactory() {...}
+    //一堆适配器接口方法转换操作
+    public static <T> Callable<T> callable(Runnable task, T result) {...}
+    public static Callable<Object> callable(Runnable task) {...}
+    public static Callable<Object> callable(final PrivilegedAction<?> action) {...}
+    public static Callable<Object> callable(final PrivilegedExceptionAction<?> action) {...}
+    public static <T> Callable<T> privilegedCallable(Callable<T> callable) {...}
+    public static <T> Callable<T> privilegedCallableUsingCurrentClassLoader(Callable<T> callable) {...}
+
+    //样例可参考 http://blog.csdn.net/a369414641/article/details/48342253 一文。
+}
+```
+
+### **67.谈谈你对 java 线程池 ThreadPoolExecutor 与 ScheduledThreadPoolExecutor 的理解及相关参数的简单介绍？**
+
+
+### **68.简单说说 CompletionService 的作用和使用场景？**
+
+
+
+### **69.Timer、TimeTask的问题？**
 
 
 
@@ -1924,14 +2045,6 @@ Deque 接口继承自　Queue　的方法在大多数情况下等同上面的操
 
 
 
-
-
-
-
-
-
-
-### **66.？**
 
 
 ### **69.谈谈你对 Thread，Runnable，Callable，Eeecutor，ExecutorService，Future　的理解？**
