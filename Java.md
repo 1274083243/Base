@@ -2079,16 +2079,17 @@ public interface CompletionService<V> {
 ```
 ExecutorCompletionService 实现类依赖于 Executor 完成实际的任务提交执行，自己主要负责结果的排队处理，AbstractExecutorService 的 invokAny 实现就依赖此类，ExecutorCompletionService 内部有一个额外的队列，每个提交给 Executor 的任务都是通过继承 FutureTask 封装过的，FutureTask 在任务结束后会回调 done 方法，所以 ExecutorCompletionService 就在继承 FutureTask 封装重写的 done 方法中将当前 FutureTask 加入额外队列，然后我们通过其 take 或者 poll 方法获取的实质就是从这个额外队列中取数据。
 
-### **69.Timer、TimeTask的问题？**
+### **69.除过常见的 wait、notify、显示 Condition 并发协作方式外你还知道哪些 java 的并发协作工具类？**
 
-### **70.并发协作工具类？**
+解析：
+
+http://blog.csdn.net/sunxianghuang/article/details/52277394
+
+### **70.ReentrantLock机制原理，ReentrantLock的newCondition机制原理？**
 
 
-### **71.ReentrantLock机制原理，ReentrantLock的newCondition机制原理？**
 
-
-
-### **72.动态特性题目？**
+### **71.动态特性题目？**
 
 
 
