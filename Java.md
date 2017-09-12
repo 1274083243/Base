@@ -2039,7 +2039,23 @@ public ThreadPoolExecutor(int corePoolSize,
                               ThreadFactory threadFactory,
                               RejectedExecutionHandler handler) {...}
 ```
-http://blog.csdn.net/u010723709/article/details/50372322
+corePoolSize：核心运行的线程个数，也就是当超过这个范围的时候就需要将新的异步任务放入到等待队列中，小于这个数时添加进来的异步任务一般直接新建 Thread 执行；
+
+maximumPoolSize：最大线程个数，当大于了这个值就会将准备新加的异步任务由一个丢弃处理机制来处理，大于 corePoolSize 且小于 maximumPoolSize 则新建 Thread 执行，但是当通过 newFixedThreadPool 创建的时候，corePoolSize 和 maximumPoolSize 是一样的，而 corePoolSize 是先执行的，所以他会先被放入等待队列而不会执行到下面的丢弃处理中；
+
+workQueue：任务等待队列，当达到 corePoolSize 的时候就向该等待队列放入线程信息（默认为一个LinkedBlockingQueue）；
+
+keepAliveTime：默认是 0，当线程没有任务处理后空闲线程保持多长时间，不推荐使用；
+
+threadFactory：是构造 Thread 的方法，一个接口类，可以使用默认的 default 实现，也可以自己去包装和传递，主要实现 newThread 方法即可；
+
+handler：当参数 maximumPoolSize 达到后丢弃处理的方法实现，java 提供了 5 种丢弃处理的方法，当然你也可以自己弄，主要是要实现接口 RejectedExecutionHandler 中 rejectedExecution(Runnabler, ThreadPoolExecutor e) 方法，java 默认使用的是 AbortPolicy，他的作用是当出现这种情况的时候抛出一个异常；
+
+通常得到线程池后会调用其中的 submit 或 execute 方法去提交执行异步任务，其实 submit 方法最终会调用 execute 方法来进行操作，只是他提供了一个 Future 来托管返回值的处理而已，当你调用需要有返回值的信息时用它来处理是比较好的，这个 Future 会包装 Callable 信息。
+
+ScheduledThreadPoolExecutor 是基于 ThreadPoolExecutor 实现的，其调用线程池的构造使用了 DelayedWorkQueue 阻塞队列实现而已。
+
+一般性的需求推荐通过 Executors 工厂类创建线程池，其对 ThreadPoolExecutor 已经做了合适的封装，很方便使用。
 
 ### **68.简单说说 CompletionService 的作用和使用场景？**
 
@@ -2060,7 +2076,8 @@ http://blog.csdn.net/u010723709/article/details/50372322
 
 
 
-
+instanceof实现原理
+为何重写equals同时重写hashcode
 
 
 反射的原理（method\invok）＼finalize原理＼
