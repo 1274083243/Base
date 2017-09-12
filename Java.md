@@ -2024,7 +2024,7 @@ public class Executors {
 }
 ```
 
-### **67.谈谈你对 java 线程池 ThreadPoolExecutor 与 ScheduledThreadPoolExecutor 的理解及相关参数的简单介绍？**
+### **67.谈谈你对 java 线程池 ThreadPoolExecutor 与 ScheduledThreadPoolExecutor 的理解及相关构造参数的含义？**
 
 解析：
 
@@ -2057,9 +2057,27 @@ ScheduledThreadPoolExecutor 是基于 ThreadPoolExecutor 实现的，其调用�
 
 一般性的需求推荐通过 Executors 工厂类创建线程池，其对 ThreadPoolExecutor 已经做了合适的封装，很方便使用。
 
-### **68.简单说说 CompletionService 的作用和使用场景？**
+深入感兴趣的可以查看[ThreadPoolExecutor的原理](http://blog.csdn.net/u010723709/article/details/50372322)一文。
 
+### **68.简单说说 CompletionService 的作用和使用场景及原理？**
 
+解析：
+
+CompletionService 是一个泛型接口，其实现类是 ExecutorCompletionService，其主要解决的场景是主线程提交多个任务然后希望有任务完成就处理结果，并且按照任务完成顺序逐个处理（譬如并发请求返回刷新UI的操作就可以谁请求成功就开始刷而不用等待所有OK才刷等）。CompletionService 接口如下：
+```java
+public interface CompletionService<V> {
+    //同线程池接口方法含义
+    Future<V> submit(Callable<V> task);
+    Future<V> submit(Runnable task, V result);
+    //阻塞等待获取下一个完成任务的结果
+    Future<V> take() throws InterruptedException;
+    //直接获取下一个完成任务的结果，如果没有已经完成的任务则返回null
+    Future<V> poll();
+    //最多等待timeout后返回，如果没有已经完成的任务则返回null
+    Future<V> poll(long timeout, TimeUnit unit) throws InterruptedException;
+}
+```
+ExecutorCompletionService 实现类依赖于 Executor 完成实际的任务提交执行，自己主要负责结果的排队处理，AbstractExecutorService 的 invokAny 实现就依赖此类，ExecutorCompletionService 内部有一个额外的队列，每个提交给 Executor 的任务都是通过继承 FutureTask 封装过的，FutureTask 在任务结束后会回调 done 方法，所以 ExecutorCompletionService 就在继承 FutureTask 封装重写的 done 方法中将当前 FutureTask 加入额外队列，然后我们通过其 take 或者 poll 方法获取的实质就是从这个额外队列中取数据。
 
 ### **69.Timer、TimeTask的问题？**
 
