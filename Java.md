@@ -2057,7 +2057,7 @@ ScheduledThreadPoolExecutor 是基于 ThreadPoolExecutor 实现的，其调用�
 
 一般性的需求推荐通过 Executors 工厂类创建线程池，其对 ThreadPoolExecutor 已经做了合适的封装，很方便使用。
 
-深入感兴趣的可以查看[ThreadPoolExecutor的原理](http://blog.csdn.net/u010723709/article/details/50372322)一文。
+深入感兴趣的可以查看[ThreadPoolExecutor的原理](http://blog.csdn.net/u010723709/article/details/50372322)一文或者[线程池源码分析-ThreadPoolExecutor](https://yq.aliyun.com/articles/39090)一文。
 
 ### **68.简单说说 CompletionService 的作用和使用场景及原理？**
 
@@ -2083,7 +2083,17 @@ ExecutorCompletionService 实现类依赖于 Executor 完成实际的任务提�
 
 解析：
 
-http://blog.csdn.net/sunxianghuang/article/details/52277394
+除过基础的并发协作操作以外 java 提供的便捷并发协作工具类主要如下：
+
+CountDownLatch：允许一个或者多个线程等待其他线程完成操作，平时我们在主线程等待其他线程结束一般都是在主线程调用其他 Thread 的 join 方法进行阻塞等待，而 join 的实质就是循环判断线程 isAlive 就进行 wait 操作，直到被 join 的线程终止后线程的 this.notifyAll 方法（JVM实现，外部不可见）会被调用进而触发 wait 结束而使 join 阻塞退出；并发包提供的 CountDownLatch 也可以实现 join 的功能，而且还提供了比 join 更多的功能，CountDownLatch 构造函数接收一个 int 参数作为计数器，如果你想等待 N 个计数点完成就传 N，当我们每个点完成时调用 CountDownLatch 的 countDown 方法则 N 就会自动减一，CountDownLatch 的 await 会阻塞当前线程直到 N 变为零为止，其采用 CAS 和 AQS（AbstractQueuedSynchronizer）实现。
+
+CyclicBarrier：同步可循换使用的屏障，让一组线程到达一个屏障（同步点）时被阻塞，直到最后一个线程到达屏障时才会开门，所有被屏障拦截的线程才会继续干活；CyclicBarrier 默认的构造方法是 CyclicBarrier(int parties)，其参数表示屏障拦截的线程数量，每个线程调用 await 方法告诉 CyclicBarrier 我已经到达了屏障，然后当前线程被阻塞；CyclicBarrier 还提供一个高级构造函数 CyclicBarrier(int parties, Runnable barrierAction) 用于在线程到达屏障时优先执行 barrierAction，方便处理复杂的业务场景；CyclicBarrier 适合并发计算数据汇总场景，其与 CountDownLatch 的主要区别是 CyclicBarrier 计数器可以 reset 而 CountDownLatch 只能用一次，其次 CyclicBarrier 提供了比 CountDownLatch 多的操作方法。
+
+Semaphore：信号量，用来控制同时访问特定资源的线程数量，它通过协调各个线程以保证合理的使用公共资源，可以用做流量控制，譬如数据库连接场景控制等；Semaphore 的构造方法 Semaphore(int permits) 接收一个整型参数，表示可用的许可证数量，即最大并发数量，使用方法就是在线程里面首先调用 acquire 方法获取一个许可，使用完后接着调用 release 归还一个许可，还可以使用 tryAcquire 尝试获取许可，其还提供了一些状态数量获取方法，不再说明。
+
+Exchanger：两个线程进行数据交换的交换者，其提供一个同步点，在这个同步点两个线程可以交换彼此的数据，这两个线程通过 exchange 方法交换数据，如果第一个线程先执行 exchange 方法则它会一直等待第二个线程也执行 exchange 方法，当两个线程都到达同步点时就可以交换数据将本线程生产的数据传递给对方；使用场景为并发校验等，可以进行 AB 互相 review 保障。
+
+具体实例细节可以参考[Java并发工具类详解](http://blog.csdn.net/sunxianghuang/article/details/52277394)一文。
 
 ### **70.ReentrantLock机制原理，ReentrantLock的newCondition机制原理？**
 
