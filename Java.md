@@ -2095,8 +2095,53 @@ Exchanger：两个线程进行数据交换的交换者，其提供一个同步�
 
 具体实例细节可以参考[Java并发工具类详解](http://blog.csdn.net/sunxianghuang/article/details/52277394)一文。
 
-### **70.ReentrantLock机制原理，ReentrantLock的newCondition机制原理？**
+### **70.简单说说 ReentrantLock 和 Condition 的原理？**
 
+解析：
+
+ReentrantLock 锁的实现原理依赖于 CAS、AQS、LockSupport 等。
+
+LockSupport 也位于并发包下，其提供了一组静态方法：
+```java
+public class LockSupport {
+    //使指定线程恢复运行状态
+    public static void unpark(Thread thread) {...}
+    //使当前线程放弃CPU进入WAITING等待状态不往下继续执行，特别注意 park 系列方法是可以响应中断的，当有中断时 park 方法会返回且线程中断标记被设置，park 还有可能无缘无故返回，程序应该主动检测 park 等待的条件是否满足。
+    public static void park(Object blocker) {...}
+    public static void parkNanos(Object blocker, long nanos) {...}
+    public static void parkUntil(Object blocker, long deadline) {...}
+    public static Object getBlocker(Thread t) {...}
+    public static void park() {...}
+    public static void parkNanos(long nanos) {...}
+    public static void parkUntil(long deadline) {...}
+}
+```
+LockSupport 的 park、unpark 实现都和 CAS 类似基于 Unsafe 类的方法，Unsafe 最终调用操作系统 API。
+
+AQS(AbstractQueuedSynchronizer) 并发工具抽象类利用了 CAS 和 LockSupport 来实现，ReentrantLock、ReentrantReadWriteLock、Semaphore、CountDownLatch 都是基于 AQS 来实现的，通过 AQS 可以简化并发工具的实现，AQS 封装了一个 int 的状态，给子类提供了查询和设置的方法，如下：
+```java
+private volatile int state;
+protected final int getState();
+protected final void setState(int newState);
+protected final boolean compareAndSetState(int expect, int update);
+```
+用于实现锁时 AQS 可以保存锁的当前持有线程，提供的方法如下：
+```java
+private transient Thread exclusiveOwnerThread;
+protected final void setExclusiveOwnerThread(Thread thread);
+protected final Thread getExclusiveOwnerThread();
+```
+AQS 内部维护了一个等待队列，借助 CAS 方法实现了无阻塞算法更新。
+
+ReentrantLock 内部有三个基于 AQS 的内部静态类，如下：
+```java
+abstract static class Sync extends AbstractQueuedSynchronizer;  //抽象类
+static final class NonfairSync extends Sync;    //非公平实现
+static final class FairSync extends Sync;   //公平实现
+```
+ReentrantLock 内部有一个 Sync 成员变量在构造方法中被赋值，构造方法决定了使用 NonfairSync 实例还是 FairSync 实例，默认为 NonfairSync 非公平实例，接着 ReentrantLock 的 lock 其实调用了 Sync 的 lock，unlock 调用了 Sync 的 release(1)，所以其实质是基于 AQS 的。
+
+AQS 具体细节可以参考[AbstractQueuedSynchronizer的介绍和原理分析](http://ifeve.com/introduce-abstractqueuedsynchronizer/)和[队列同步器 AQS 详解](http://blog.csdn.net/sunxianghuang/article/details/52287968)一文。
 
 
 ### **71.动态特性题目？**
@@ -2108,7 +2153,7 @@ Exchanger：两个线程进行数据交换的交换者，其提供一个同步�
 instanceof实现原理
 为何重写equals同时重写hashcode
 
-
+匿名内部类，静态类
 反射的原理（method\invok）＼finalize原理＼
 
 ### **.谈谈 Java 的 NIO 与内存映射，，**
