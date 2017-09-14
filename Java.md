@@ -2143,6 +2143,7 @@ ReentrantLock 内部有一个 Sync 成员变量在构造方法中被赋值，构
 
 AQS 具体细节可以参考[AbstractQueuedSynchronizer的介绍和原理分析](http://ifeve.com/introduce-abstractqueuedsynchronizer/)和[队列同步器 AQS 详解](http://blog.csdn.net/sunxianghuang/article/details/52287968)一文。
 
+ReentrantLock 可以查看 [ReentrantLock实现原理深入探究](http://www.importnew.com/22924.html)。
 
 ### **71.动态特性题目？**
 
