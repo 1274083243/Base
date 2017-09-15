@@ -1293,7 +1293,7 @@ return Entry[index];
 当我们通过 get 从 HashMap 获取元素时首先会定位到数组元素，接着再遍历该元素处的链表获取真实元素。
 当 key 为 null 时 HashMap 特殊处理总是放在 Entry[] 数组的第一个元素。
 HashMap 使用 Key 对象的 hashCode() 和 equals() 方法去决定 key-value 对的索引，当我们试着从 HashMap 中获取值的时候，这些方法也会被用到，所以 equals() 和 hashCode() 的实现应该遵循以下规则：
-如果`o1.equals(o2)`则`o1.hashCode() == o2.hashCode()`必须为 true，或者如果`o1.hashCode() == o2.hashCode()`则不意味着o1.equals(o2)会为true。
+如果`o1.equals(o2)`则`o1.hashCode() == o2.hashCode()`必须为 true，或者如果`o1.hashCode() == o2.hashCode()`则不意味着`o1.equals(o2)`会为true，这也就是衍生问题 Java 中重写 equals 方法的同时为什么要重写 hashCode 方法的答案。
 
 关于 HashMap 的 hash 函数算法巧妙之处可以参见本文链接：http://pengranxiang.iteye.com/blog/543893
 
@@ -2145,16 +2145,21 @@ AQS 具体细节可以参考[AbstractQueuedSynchronizer的介绍和原理分析]
 
 ReentrantLock 可以查看 [ReentrantLock实现原理深入探究](http://www.importnew.com/22924.html)。
 
-### **71.动态特性题目？**
+### **71.简单说说 java instanceof 的作用与 Class.isInstance 的区别？**
+
+解析：
+
+java 中的 instanceof 运算符用来在运行时指出对象是否是特定类的一个实例，通过返回一个布尔值来指出这个对象是否是这个特定类或者是它的子类的一个实例；用法为`result = object instanceof class`，参数 result 布尔类型，object 为必选项的实例，class 为必选项的任意已定义的对象类，如果 object 是 class 的一个实例则 instanceof 运算符返回 true，如果 object 不是指定类的一个实例或者 object 是 null 则返回 false；但是 instanceof 在 java 的编译状态和运行状态是有区别的，在编译状态中 class 可以是 object 对象的父类、自身类、子类，在这三种情况下 java 编译时不会报错，在运行转态中 class 可以是 object 对象的父类、自身类但不能是子类，当为父类、自生类的情况下 result 结果为 true，为子类的情况下为 false。
+
+Class.inInstance(obj) 表明这个对象能不能被转化为这个类，一个对象是本身类的一个对象，一个对象能被转化为本身类所继承类（父类的父类等）和实现的接口（接口的父接口）强转，所有对象都能被 Object 的强转，凡是 null 有关的都是 false。
+
+### **72.**
+
+
+### **73.匿名内部类和静态内部类有啥区别？**
 
 
 
-
-
-instanceof实现原理
-为何重写equals同时重写hashcode
-
-匿名内部类，静态类
 反射的原理（method\invok）＼finalize原理＼
 
 ### **.谈谈 Java 的 NIO 与内存映射，，**
