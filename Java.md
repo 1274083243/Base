@@ -2169,13 +2169,39 @@ Class.inInstance(obj) 表明这个对象能不能被转化为这个类，一个�
 |优点|能够运行时动态获取类的实例，大大提高系统的灵活性和扩展性；与 Java 动态编译相结合可以实现无比强大的功能；|
 |缺点|使用反射的性能较低；使用反射相对来说不安全；破坏了类的封装性，可以通过反射获取这个类的私有方法和属性；有些情况下反射受版本兼容问题而不稳定，譬如 Android；运行时检查，故难提前发现问题；| 
 
-### **73.反射可以操作泛型类型吗？为什么？**
+### **73.Java 泛型在编译时被擦出后还有办法在运行时获取泛型信息吗？**
 
 解析：
 
+有办法，正因为泛型在编译时擦出所以会有如下现象：
+```java
+Class c1 = new ArrayList<Integer>().getClass();  
+Class c2 = new ArrayList<String>().getClass();   
+System.out.println(c1 == c2);  //true
+```
+`ArrayList<Integer>`和`ArrayList<String>`在编译的时候是完全不同的类型，我们无法在写代码时把一个 String 类型的实例加到`ArrayList<Integer>`中，但是在程序运行时的确会输出 true，因为不管是`ArrayList<Integer>`还是`ArrayList<String>`在编译时都会被编译器擦除成了`ArrayList`。
 
+运行时被擦出的泛型信息获取其实主要依赖反射包下的 ParameterizedType 泛型参数类型接口，应用也比较广泛，譬如 Gson 框架就是这么搞的，如下是一段获取代码示例：
+```java
+Map<String, Integer> map = new HashMap<String, Integer>() {};  //大括号非常重要，相当于匿名内部类
+Type type = map.getClass().getGenericSuperclass();  
+ParameterizedType parameterizedType = ParameterizedType.class.cast(type);  
+for (Type typeArgument : parameterizedType.getActualTypeArguments()) {  
+    System.out.println(typeArgument.getTypeName());  
+}  
+/* Output 
+java.lang.String 
+java.lang.Integer 
+*/  
+```
+上面这段代码展示了如何获取 map 这个实例所对应类的泛型信息，其中最重要的就是第一行 map 实例的创建是一个匿名内部类且为 HashMap 的子类，泛型参数限定为 String 和 Integer，Java 引入泛型擦除的原因是避免因为引入泛型而导致运行时创建不必要的类，所以我们可以通过定义类的方式在类信息中保留泛型信息，从而在运行时获得这些泛型信息，所以 Java 的泛型擦除是有范围的，即类定义中的泛型是不会被擦除的。 
 
-### **74.？**
+感兴趣的可以去看下[Gson 官方源码解析的代码](https://github.com/google/gson/blob/2b15334a4981d4e0bd4f2c2d34b8978a4167f36a/gson/src/main/java/com/google/gson/reflect/TypeToken.java#L77)。
+
+### **74.java 反射的原理是什么？**
+
+解析：
+
 
 
 ### **75.？**
@@ -2195,8 +2221,30 @@ Class.inInstance(obj) 表明这个对象能不能被转化为这个类，一个�
 
 ### **80.？**
 
+能不能自己写个类，也叫java.lang.String？
+ 
+可以，但在应用的时候，需要用自己的类加载器去加载，否则，系统的类加载器永远只是去加载jre.jar包中的那个java.lang.String。由于在tomcat的web应用程序中，都是由webapp自己的类加载器先自己加载WEB-INF/classess目录中的类，然后才委托上级的类加载器加载，如果我们在tomcat的web应用程序中写一个java.lang.String，这时候Servlet程序加载的就是我们自己写的java.lang.String，但是这么干就会出很多潜在的问题，原来所有用了java.lang.String类的都将出现问题。
+ 
+虽然java提供了endorsed技术，可以覆盖jdk中的某些类，具体做法是….。但是，能够被覆盖的类是有限制范围，反正不包括java.lang这样的包中的类。
+ 
+（下面的例如主要是便于大家学习理解只用，不要作为答案的一部分，否则，人家怀疑是题目泄露了）例如，运行下面的程序：
+package java.lang;
+ 
+public class String {
+ 
+   
+    public static void main(String[] args) {
+       // TODO Auto-generated method stub
+       System.out.println("string");
+    }
+ 
+}
+报告的错误如下：
+java.lang.NoSuchMethodError: main
+Exception in thread "main"
+这是因为加载了jre自带的java.lang.String，而该类中没有main方法。
 
-什么是反射，反射优缺点，原理
+
 反射的原理（method\invok）＼finalize原理＼
 
 ### **.谈谈 Java 的 NIO 与内存映射，，**
