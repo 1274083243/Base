@@ -2159,7 +2159,9 @@ Class.inInstance(obj) 表明这个对象能不能被转化为这个类，一个�
 
 反射是在运行时而非编译时动态获取类型的信息（譬如接口信息、成员信息、方法信息、构造方法信息等）然后依据这些动态获取到的信息创建对象、访问修改成员、调用方法等。
 
-通过调用`Class.forName(clzss)`方法可以访问返回一个以指定字符串 clzss 为类名的类对象，也可以直接通过`类名.Class`获取 Class 类对象，还可以通过`实例.getClass()`方法获取 Class 类对象；Class 类提供了许多方法，譬如可以获取与类名称有关的信息，可以获取类中定义的字段 Field（静态和实例变量都被称为字段，可获取 public 与非 public 的字段）、Field 也提供了许多获取字段或者设置字段具体信息的操作，可以获取类中定义的方法 Method（静态方法和非静态方法都是方法，可获取 public 与非 public 的方法）、Method 也提供了许多获取方法信息、修饰符、参数、返回值、注解等、调用对象方法的操作；`Class.newInstance()`方法可以创建对象实例（只是用默认无参构造），不过也提供了一些其他方法获取所有构造方法；Class 还提供了类型检查、类型判断、修饰符、父类、接口、注解、内部类等操作的方法。
+通过调用`Class.forName(clzss)`方法可以访问返回一个以指定字符串 clzss 为类名的类对象，因为 java 里面任何 class 都要装载在虚拟机上才能运行，所以那个方法的作用就是装载类用的，也可以直接通过`类名.Class`获取 Class 类对象，还可以通过`实例.getClass()`方法获取 Class 类对象；Class 类提供了许多方法，譬如可以获取与类名称有关的信息，可以获取类中定义的字段 Field（静态和实例变量都被称为字段，可获取 public 与非 public 的字段）、Field 也提供了许多获取字段或者设置字段具体信息的操作，可以获取类中定义的方法 Method（静态方法和非静态方法都是方法，可获取 public 与非 public 的方法）、Method 也提供了许多获取方法信息、修饰符、参数、返回值、注解等、调用对象方法的操作；`Class.newInstance()`方法可以创建对象实例（只是用默认无参构造），不过也提供了一些其他方法获取所有构造方法；Class 还提供了类型检查、类型判断、修饰符、父类、接口、注解、内部类等操作的方法。
+
+从 JVM 的角度使用关键字 new 创建一个类的时候这个类可以没有被加载，但是使用 newInstance() 方法的时候就必须保证这个类已经加载且这个类已经连接了，而完成上面两个步骤是 Class 的静态方法 forName() 所完成的，这个静态方法调用了启动类加载器（即加载 java API 的那个加载器），所以 newInstance() 实际上是把 new 这个方式分解为两步，即首先调用 Class 加载方法加载某个类然后实例化。
 
 提高反射效率要考虑的问题如下，首先保证反射 API 最小化，譬如尽量使用 getMethod 直接获取而不是 getMethods 遍历查找获取；其次需要多次动态创建一个类的实例时尽可能的使用缓存。
 
@@ -2202,27 +2204,30 @@ java.lang.Integer
 
 解析：
 
+http://www.cnblogs.com/techspace/p/6931397.html
 
+### **75.简单谈谈你对 java 类加载机制的认识和理解？**
 
-### **75.？**
+解析：
 
+http://www.jfox.info/java-classloader-xq.html
+http://www.cnblogs.com/lanxuezaipiao/p/4138511.html
+http://www.jfox.info/java-classloader-de-gong-zuo-yuan-li.html
+http://www.importnew.com/1796.html
+http://www.importnew.com/12198.html
 
-### **76.？**
+### **76.简单谈谈类加载时机、加载过程、加载顺序？**
 
+解析：
 
-### **77.？**
+http://www.cnblogs.com/javaee6/p/3714716.html
+http://www.cnblogs.com/tengpan-cn/p/5869099.html
+http://blog.csdn.net/qq_16216221/article/details/71600535
 
+### **77.能不能自己写个类，也叫 java.lang.String？**
 
-### **78.？**
+解析：
 
-
-### **79.？**
-
-
-### **80.？**
-
-能不能自己写个类，也叫java.lang.String？
- 
 可以，但在应用的时候，需要用自己的类加载器去加载，否则，系统的类加载器永远只是去加载jre.jar包中的那个java.lang.String。由于在tomcat的web应用程序中，都是由webapp自己的类加载器先自己加载WEB-INF/classess目录中的类，然后才委托上级的类加载器加载，如果我们在tomcat的web应用程序中写一个java.lang.String，这时候Servlet程序加载的就是我们自己写的java.lang.String，但是这么干就会出很多潜在的问题，原来所有用了java.lang.String类的都将出现问题。
  
 虽然java提供了endorsed技术，可以覆盖jdk中的某些类，具体做法是….。但是，能够被覆盖的类是有限制范围，反正不包括java.lang这样的包中的类。
@@ -2244,15 +2249,26 @@ java.lang.NoSuchMethodError: main
 Exception in thread "main"
 这是因为加载了jre自带的java.lang.String，而该类中没有main方法。
 
+### **78.Java 类加载器怎么实现将同一个对象加载两次？**
 
-反射的原理（method\invok）＼finalize原理＼
+解析：
+
+https://www.zhihu.com/question/46501101?sort=created
+
+
+### **79.？**
+
+
+### **80.？**
+
+
+ 
+
+
+
+反射的原理（method\invok）＼finalize原理＼垃圾回收
 
 ### **.谈谈 Java 的 NIO 与内存映射，，**
 
 
-并发问题
-http://www.importnew.com/12773.html
-
-http://www.jfox.info/40-ge-java-ji-he-lei-mian-shi-ti-he-da-an.html
-http://www.importnew.com/22083.html
-http://www.importnew.com/22087.html
+http://blog.csdn.net/ck1600259860/article/details/50730871
