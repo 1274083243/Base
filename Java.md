@@ -2213,19 +2213,31 @@ Class clazz = ClassLoader.getSystemClassLoader().loadClass("com.package.DemoClas
 
 具体可以参考[《JAVA反射原理》](http://www.cnblogs.com/techspace/p/6931397.html)和[《Java反射在JVM的实现》](http://www.importnew.com/21211.html)。
 
-### **75.简单谈谈你对 java 类加载机制的认识和理解？**
+### **75.简单谈谈 java 类加载器的加载机制？**
 
 解析：
 
-http://www.jfox.info/java-classloader-xq.html
-http://www.cnblogs.com/lanxuezaipiao/p/4138511.html
-http://www.jfox.info/java-classloader-de-gong-zuo-yuan-li.html
+通过 java 命令运行 java 程序的步骤就是指定包含 main 方法的完整类名以及一个 classpath 类路径，类路径可以有多个，对于直接的 class 文件路径就是 class 文件的根目录，对于 jar 包文件路径是 jar 包的完整路径，包含 jar 包名字；java 运行时会根据类的完全限定名寻找并加载，寻找的方式基本就是在系统类和指定的路径中寻找，如果是 class 文件的根目录则直接查看是否有对应的子目录及文件，如果是 jar 包则首先在内存中解压文件，然后再查看是否有对应的类；负责类加载的类就是 ClassLoader 类加载器，它的输入是完全限定的类名，输出是 Class 对象，java 虚拟机中可以安装多个类加载器，系统默认主要有三个类加载器，每个类负责加载特定位置的类，也可以自定义类加载器，自定义的加载器必须继承 ClassLoader，如下：
+
+|加载器|说明|
+|----|----|
+|启动类加载器(Bootstrap ClassLoader)|此加载器为虚拟机实现的一部分，不是 java 语言实现的，一般为 C++ 实现，主要负责加载 java 基础类（譬如`<JAVA_HOME>/lib/rt.jar`，常用的 String、List 等都位于此包下），启动类加载器无法被 java 程序直接引用。|
+|扩展类加载器(Extension ClassLoader)|此加载器实现类为`sun.misc.Launcher$ExtClassLoader`，负责加载 java 的一些扩展类（一般为`<JAVA_HOME>/lib/ext`目录下的 jar 包），开发者可直接使用。|
+|应用程序类加载器(Application ClassLoader)|此加载器实现类为`sun.misc.Launcher$AppClassLoader`，负责加载应用程序的类，包括自己写的和引用的第三方类库，即 classpath 类路径中指定的类，开发者可直接使用，一个程序运行时会创建一个这个加载器，程序中用到加载器的地方如果没有特殊指定一般都是这个加载器，所以也被称为 System 系统类加载器。|
+
+这三个加载器具备父子委派关系（非继承父子关系），在 java 中每个类都是由某个类加载器的实体来载入的，所以在 Class 类的实体中都会有字段记录载入它的类加载器的实体（当为 null 时，其指 Bootstrap ClassLoader），在 java 类加载器中除了引导类加载器（既 Bootstrap ClassLoader），所有的类加载器都有一个父类加载器（因为他们本身自己就是 java 类），子 ClassLoader 有一个变量 parent 指向父 ClassLoader，在子 ClassLoader 加载类时一般会先通过父 ClassLoader 加载，所以在加载一个 class 文件时首先会判断是否已经加载过了，加载过则直接返回 Class 对象（一个类只会被一个 ClassLoader 加载一次），没加载过则先让父 ClassLoader 去加载，如果加载成功返回得到的 Class 对象，父没有加载成功则尝试自己加载，自己加载不成功则抛出 ClassNotFoundException，整个这个加载流程就是双亲委派模型，即优先让父 ClassLoader 加载；双亲委派可以从优先级的策略上避免 Java 类库被覆盖的问题，例如类 java.long.Object 存放在 rt.jar 中，无论哪个类加载器要加载这个类最终都会委派给启动类加载器进行加载，因此 Object 类在程序的各种类加载器环境中都是同一个类，相反如果我们自己写了一个类名为 java.long.Object 且放在了程序的 classpath 中，那系统中将会出现多个不同的 Object 类，java 类型体系中最基础的行为也无法保证，所以一般遵循双亲委派的加载器就不会存在这个问题。
+
+类加载机制中的双亲委派模型只是一般情况下的机制，有些时候我们可以自定义加载顺序（不建议）就不用遵守双亲委派模型了，同时以 java 开头的类也不能被自定义类加载器加载，这是 java 安全机制保证的；ClassLoader 一般是系统提供的，不需要自己实现，不过通过自定义 ClassLoader 可以实现一些灵活强大的功能，譬如热部署（不重启 Java 程序的情况下动态替换类实现）、应用的模块化和隔离化（不同 ClassLoader 可以加载相同的类，但是互相隔离互不影响，tomcat 就是利用这个特性管理多 web 应用的）、灵活加载等，通过自定义类加载器我们可以加载其它位置的类或 jar，自定义类加载器主要步骤为继承 java.lang.ClassLoader 然后重写父类的 findClass 方法，之所以一般只重写这一个方法是因为 JDK 已经在 loadClass 方法中帮我们实现了 ClassLoader 搜索类的算法，当在 loadClass 方法中搜索不到类时 loadClass 方法会主动调用 findClass 方法来搜索类，所以我们只需重写该方法即可，如没有特殊的要求，一般不建议重写 loadClass 搜索类的算法。
+
+JVM 在判定两个 Class 是否相同时不仅会判断两个类名是否相同而且会判断是否由同一个类加载器实例加载的，只有两者同时满足的情况下 JVM 才认为这两个 Class 是相同的，就算两个 Class 是同一份 class 字节码文件，如果被两个不同的 ClassLoader 实例所加载 JVM 也会认为它们是两个不同 Class，比如字节码文件 Simple.class 被 ClassLoaderA 和 ClassLoaderB 这两个类加载器分别加载并分别得到了 Class 实例，而对于 JVM 来说它们是两个不同的实例对象，但它们确实是同一份字节码文件，当试图将这个 Class 实例生成具体的对象进行转换时就会抛运行时异常 java.lang.ClassCaseException 提示这是两个不同的类型（切记，Android 开发中我已经踩坑过一次）；此外一个 ClassLoader 创建时如果没有指定 parent 则 parent 默认就是 AppClassLoader。
+
+关于 Java 类加载器的细节可以参考[《深入分析Java ClassLoader原理》](http://blog.csdn.net/xyang81/article/details/7292380)一文。
+
+### **76.简单谈谈类初始化机制？**
+
+解析：
+
 http://www.importnew.com/1796.html
-http://www.importnew.com/12198.html
-
-### **76.简单谈谈类加载时机、加载过程、加载顺序？**
-
-解析：
 
 http://www.cnblogs.com/javaee6/p/3714716.html
 http://www.cnblogs.com/tengpan-cn/p/5869099.html
@@ -2256,6 +2268,18 @@ java.lang.NoSuchMethodError: main
 Exception in thread "main"
 这是因为加载了jre自带的java.lang.String，而该类中没有main方法。
 
+
+那么，能不能自己写个类叫java.lang.System？
+
+一般情况下不能，因为类加载采用委托机制，这样可以保证parent类加载器优先，也就是总是使用parent类加载器能找到的类，这样总是使用java系统提供的System。因为每个类加载器加载类时，又先委托给其上级类加载器，java.lang.System在BootStrap中最先加载。但是我们可以写一个类加载器来加载我们自己写的java.lang.System类。
+
+当需要编写自己的类加载器时：
+
+自定义的类加载器必须继承ClassLoader。
+重写loadClass方法与findClass方法。loadClass中先调用父类的loadClass，然后调用findClass，通常情况下只覆盖findClass就可以。
+重写defineClass方法。
+注：自定义的类加载器通常用于解密自己写的已加密的class字节码，否则即使别人拥有该class文件也无法被系统的类加载器正常加载。
+
 ### **78.Java 类加载器怎么实现将同一个对象加载两次？**
 
 解析：
@@ -2263,8 +2287,13 @@ Exception in thread "main"
 https://www.zhihu.com/question/46501101?sort=created
 
 
-### **79.？**
+### **79.ClassLoader 与 Class.forName区别？**
 
+解析：
+
+如何显式的加载类
+
+Java提供了显式加载类的API：Class.forName(classname)和Class.forName(classname, initialized, classloader)。就像上面的例子中，你可以指定类加载器的名称以及要加载的类的名称。类的加载是通过调用java.lang.ClassLoader的loadClass()方法，而loadClass()方法则调用了findClass()方法来定位相应类的字节码。在这个例子中Extension类加载器使用了java.net.URLClassLoader，它从JAR和目录中进行查找类文件，所有以”/”结尾的查找路径被认为是目录。如果findClass()没有找到那么它会抛出java.lang.ClassNotFoundException异常，而如果找到的话则会调用defineClass()将字节码转化成类实例，然后返回。
 
 ### **80.？**
 
@@ -2273,7 +2302,7 @@ https://www.zhihu.com/question/46501101?sort=created
 
 
 
-反射的原理（method\invok）＼finalize原理＼垃圾回收
+反射的原理（method\invok）＼finalize原理＼垃圾回收、ASM、AOP
 
 ### **.谈谈 Java 的 NIO 与内存映射，，**
 
