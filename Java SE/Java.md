@@ -2239,9 +2239,20 @@ JVM 在判定两个 Class 是否相同时不仅会判断两个类名是否相同
 
 一般情况下不能，因为类加载采用双亲委托机制，这样可以保证 parent 类加载器优先，也就是总是使用 parent 类加载器能找到的类，这样总是使用 java 系统提供的 String 类，因为每个类加载器加载类时先委托给其上级类加载器，java.lang.String 在 BootStrap 中最先加载，但是我们可以自己写一个类加载器（譬如 parent 设置 null 等）来加载我们自己写的 java.lang.String 类，当编写自己的类加载器时我们首先让自定义的类加载器继承 ClassLoader，然后重写 loadClass 方法与 findClass 方法，loadClass 中先调用父类的 loadClass，然后调用 findClass，通常情况下只重写覆盖 findClass 就可以了，当然我们还可以重写 defineClass 方法让自定义的类加载器用于解密自己写的已加密的 class 字节码，这样即使别人拥有该 class 文件也无法被系统的类加载器正常加载，切记类的包路径和类加载器决定类的唯一性。
 
-### **77.**
+### **77.简单谈谈类初始化机制与顺序流程？**
 
 解析：
+
+谈类初始化机制实质是要包含类加载机制的，类加载机制实质主要就是类加载器原理，类加载器原理的核心是双亲委派父优先级加载，只有这样的机制才保证了类被加载的唯一性，只是类加载器机制是宏观的概述，往细了说就涉及类初始化机制。
+
+
+
+http://www.importnew.com/1796.html
+
+http://www.cnblogs.com/javaee6/p/3714716.html
+http://www.cnblogs.com/tengpan-cn/p/5869099.html
+https://www.2cto.com/kf/201608/535046.html
+http://blog.csdn.net/qq_16216221/article/details/71600535
 
 
 
@@ -2255,15 +2266,16 @@ Java提供了显式加载类的API：Class.forName(classname)和Class.forName(cl
 
 ### **79.？**
 
-### **81.简单谈谈类初始化机制？**
+解析：
+
+http://www.codes51.com/itwd/1166147.html
+http://blog.csdn.net/u010590685/article/details/47066865
+
+### **80.**
 
 解析：
 
-http://www.importnew.com/1796.html
 
-http://www.cnblogs.com/javaee6/p/3714716.html
-http://www.cnblogs.com/tengpan-cn/p/5869099.html
-http://blog.csdn.net/qq_16216221/article/details/71600535
 
 
  
@@ -2273,6 +2285,10 @@ http://blog.csdn.net/qq_16216221/article/details/71600535
 反射的原理（method\invok）＼finalize原理＼垃圾回收、ASM、AOP
 
 ### **.谈谈 Java 的 NIO 与内存映射，，**
+
+java面试大全
+http://www.importnew.com/22083.html
+http://bbs.51cto.com/thread-1473565-1.html
 
 
 http://blog.csdn.net/ck1600259860/article/details/50730871
