@@ -2233,7 +2233,29 @@ JVM 在判定两个 Class 是否相同时不仅会判断两个类名是否相同
 
 关于 Java 类加载器的细节可以参考[《深入分析Java ClassLoader原理》](http://blog.csdn.net/xyang81/article/details/7292380)一文。
 
-### **76.简单谈谈类初始化机制？**
+### **76.java 能不能自己写个类也叫 java.lang.String？**
+
+解析：
+
+一般情况下不能，因为类加载采用双亲委托机制，这样可以保证 parent 类加载器优先，也就是总是使用 parent 类加载器能找到的类，这样总是使用 java 系统提供的 String 类，因为每个类加载器加载类时先委托给其上级类加载器，java.lang.String 在 BootStrap 中最先加载，但是我们可以自己写一个类加载器（譬如 parent 设置 null 等）来加载我们自己写的 java.lang.String 类，当编写自己的类加载器时我们首先让自定义的类加载器继承 ClassLoader，然后重写 loadClass 方法与 findClass 方法，loadClass 中先调用父类的 loadClass，然后调用 findClass，通常情况下只重写覆盖 findClass 就可以了，当然我们还可以重写 defineClass 方法让自定义的类加载器用于解密自己写的已加密的 class 字节码，这样即使别人拥有该 class 文件也无法被系统的类加载器正常加载，切记类的包路径和类加载器决定类的唯一性。
+
+### **77.**
+
+解析：
+
+
+
+### **78.ClassLoader 与 Class.forName区别？**
+
+解析：
+
+如何显式的加载类
+
+Java提供了显式加载类的API：Class.forName(classname)和Class.forName(classname, initialized, classloader)。就像上面的例子中，你可以指定类加载器的名称以及要加载的类的名称。类的加载是通过调用java.lang.ClassLoader的loadClass()方法，而loadClass()方法则调用了findClass()方法来定位相应类的字节码。在这个例子中Extension类加载器使用了java.net.URLClassLoader，它从JAR和目录中进行查找类文件，所有以”/”结尾的查找路径被认为是目录。如果findClass()没有找到那么它会抛出java.lang.ClassNotFoundException异常，而如果找到的话则会调用defineClass()将字节码转化成类实例，然后返回。
+
+### **79.？**
+
+### **81.简单谈谈类初始化机制？**
 
 解析：
 
@@ -2242,60 +2264,6 @@ http://www.importnew.com/1796.html
 http://www.cnblogs.com/javaee6/p/3714716.html
 http://www.cnblogs.com/tengpan-cn/p/5869099.html
 http://blog.csdn.net/qq_16216221/article/details/71600535
-
-### **77.能不能自己写个类，也叫 java.lang.String？**
-
-解析：
-
-可以，但在应用的时候，需要用自己的类加载器去加载，否则，系统的类加载器永远只是去加载jre.jar包中的那个java.lang.String。由于在tomcat的web应用程序中，都是由webapp自己的类加载器先自己加载WEB-INF/classess目录中的类，然后才委托上级的类加载器加载，如果我们在tomcat的web应用程序中写一个java.lang.String，这时候Servlet程序加载的就是我们自己写的java.lang.String，但是这么干就会出很多潜在的问题，原来所有用了java.lang.String类的都将出现问题。
- 
-虽然java提供了endorsed技术，可以覆盖jdk中的某些类，具体做法是….。但是，能够被覆盖的类是有限制范围，反正不包括java.lang这样的包中的类。
- 
-（下面的例如主要是便于大家学习理解只用，不要作为答案的一部分，否则，人家怀疑是题目泄露了）例如，运行下面的程序：
-package java.lang;
- 
-public class String {
- 
-   
-    public static void main(String[] args) {
-       // TODO Auto-generated method stub
-       System.out.println("string");
-    }
- 
-}
-报告的错误如下：
-java.lang.NoSuchMethodError: main
-Exception in thread "main"
-这是因为加载了jre自带的java.lang.String，而该类中没有main方法。
-
-
-那么，能不能自己写个类叫java.lang.System？
-
-一般情况下不能，因为类加载采用委托机制，这样可以保证parent类加载器优先，也就是总是使用parent类加载器能找到的类，这样总是使用java系统提供的System。因为每个类加载器加载类时，又先委托给其上级类加载器，java.lang.System在BootStrap中最先加载。但是我们可以写一个类加载器来加载我们自己写的java.lang.System类。
-
-当需要编写自己的类加载器时：
-
-自定义的类加载器必须继承ClassLoader。
-重写loadClass方法与findClass方法。loadClass中先调用父类的loadClass，然后调用findClass，通常情况下只覆盖findClass就可以。
-重写defineClass方法。
-注：自定义的类加载器通常用于解密自己写的已加密的class字节码，否则即使别人拥有该class文件也无法被系统的类加载器正常加载。
-
-### **78.Java 类加载器怎么实现将同一个对象加载两次？**
-
-解析：
-
-https://www.zhihu.com/question/46501101?sort=created
-
-
-### **79.ClassLoader 与 Class.forName区别？**
-
-解析：
-
-如何显式的加载类
-
-Java提供了显式加载类的API：Class.forName(classname)和Class.forName(classname, initialized, classloader)。就像上面的例子中，你可以指定类加载器的名称以及要加载的类的名称。类的加载是通过调用java.lang.ClassLoader的loadClass()方法，而loadClass()方法则调用了findClass()方法来定位相应类的字节码。在这个例子中Extension类加载器使用了java.net.URLClassLoader，它从JAR和目录中进行查找类文件，所有以”/”结尾的查找路径被认为是目录。如果findClass()没有找到那么它会抛出java.lang.ClassNotFoundException异常，而如果找到的话则会调用defineClass()将字节码转化成类实例，然后返回。
-
-### **80.？**
 
 
  
