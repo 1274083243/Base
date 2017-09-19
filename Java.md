@@ -2200,11 +2200,17 @@ java.lang.Integer
 
 感兴趣的可以去看下[Gson 官方源码解析的代码](https://github.com/google/gson/blob/2b15334a4981d4e0bd4f2c2d34b8978a4167f36a/gson/src/main/java/com/google/gson/reflect/TypeToken.java#L77)。
 
-### **74.java 反射的原理是什么？**
+### **74.java 反射的基本原理是什么？**
 
 解析：
 
-http://www.cnblogs.com/techspace/p/6931397.html
+java 反射机制是围绕 Class 类展开的，JVM 使用 ClassLoader 将 class 字节码文件加载到方法区内存中，如下：
+```java
+Class clazz = ClassLoader.getSystemClassLoader().loadClass("com.package.DemoClass");
+```
+可见 ClassLoader 根据类的完全限定名加载类并返回了一个 Class 对象，而 java 反射的所有起源都是从这个 Class 类开始的；为了提高反射的性能，Class 类内部有一个 useCaches 静态变量来标记是否使用缓存，这个值可以通过外部配置项 sun.reflect.noCaches 进行开关，Class 类内部提供了一个 ReflectionData 内部类用来存放反射数据的缓存，并声明了一个 reflectionData 字段，由于稍后进行按需延迟加载并缓存，所以这个域并没有指向一个实例化的 ReflectionData 对象；反射方法真正调用的主要流程都是先从 Class 内部的 reflectionData 缓存中读取数据，如果没有缓存数据则从 JVM 中去请求数据然后设置到缓存中供下次使用；在 JVM 中实质 Class 文件会以字节码存在，反射基本操作其实就是查找匹配调用返回的过程。
+
+具体可以参考[《JAVA反射原理》](http://www.cnblogs.com/techspace/p/6931397.html)和[《Java反射在JVM的实现》](http://www.importnew.com/21211.html)。
 
 ### **75.简单谈谈你对 java 类加载机制的认识和理解？**
 
