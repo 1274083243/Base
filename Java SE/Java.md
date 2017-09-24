@@ -2278,10 +2278,276 @@ JVM 在判定两个 Class 是否相同时不仅会判断两个类名是否相同
 非静态初始化块主要是用于对象的初始化操作，在每次创建对象的时都要调用一次，其执行顺序在构造方法之前；由于非静态成员不能在静态方法中使用，同样也不能在静态初始化块中，因此静态初始化块主要用于初始化静态变量和静态方法，静态初始化块只在类第一次加载到内存时调用一次，并非一定要创建对象才执行，静态初始化块比非静态初始化块先执行。
 
 ### **78.说说下面程序的运行结果及原因？**
+```java
+class Father {
+    {
+        System.out.println("FB0 ......");
+    }
 
+    static {
+        System.out.println("FSB0 ......");
+        //d\a无法在此打印，执行在此时d\a还位初始化
+    }
+
+    static int a = 1;
+
+    static {
+        System.out.println("FSB1 a:"+a);
+        //d无法在此打印，执行在此时d还位初始化
+    }
+
+    int b = 1;
+    static {
+        a++;
+        System.out.println("FSB2 a:"+a);
+        //d无法在此打印，执行在此时d还位初始化
+    }
+
+    final static int c = 1;
+    static {
+        System.out.println("FSB3 c:"+c);
+        //d无法在此打印，执行在此时d还位初始化
+    }
+
+    public Father() {
+        a++;
+        b++;
+        System.out.println("F CONSTTRUCTOR a:"+a+", b:"+b+", c:"+c+", d:"+d);
+    }
+
+    {
+        a++;
+        b++;
+        System.out.println("FB4 a:"+a+", b:"+b+", c:"+c);
+        //d无法在此打印，执行在此时d还位初始化
+    }
+
+    final int d = 1;
+
+    public void func1() {
+        a++;
+        b++;
+        System.out.println("F func1 a:"+a+", b:"+b+", c:"+c+", d:"+d);
+    }
+
+    public static void func2() {
+        a++;
+        System.out.println("F func1 a:"+a+", c:"+c);
+    }
+}
+
+class Child extends Father {
+    {
+        System.out.println("CB0 ......");
+    }
+
+    static {
+        System.out.println("CSB0 ......");
+        //d\a无法在此打印，执行在此时d\a还位初始化
+    }
+
+    static int a = 1;
+
+    static {
+        System.out.println("CSB1 a:"+a);
+        //d无法在此打印，执行在此时d还位初始化
+    }
+
+    int b = 1;
+    static {
+        a++;
+        System.out.println("CSB2 a:"+a);
+        //d无法在此打印，执行在此时d还位初始化
+    }
+
+    final static int c = 1;
+    static {
+        System.out.println("CSB3 c:"+c);
+        //d无法在此打印，执行在此时d还位初始化
+    }
+
+    public Child() {
+        a++;
+        b++;
+        System.out.println("C CONSTTRUCTOR a:"+a+", b:"+b+", c:"+c+", d:"+d);
+    }
+
+    {
+        a++;
+        b++;
+        System.out.println("CB4 a:"+a+", b:"+b+", c:"+c);
+        //d无法在此打印，执行在此时d还位初始化
+    }
+
+    final int d = 1;
+
+    public void func1() {
+        a++;
+        b++;
+        System.out.println("C func1 a:"+a+", b:"+b+", c:"+c+", d:"+d);
+    }
+
+    public static void func2() {
+        a++;
+        System.out.println("C func1 a:"+a+", c:"+c);
+    }
+
+    public static class BBQ {
+        static {
+            System.out.println("BBQ");
+        }
+    }
+}
+
+public class Demo {
+    public static void main(String[] args) {
+        Child.BBQ bbq = new Child.BBQ();
+        Father.func2();
+        Child.func2();
+        Father father = new Child();
+        father.func1();
+    }
+}
+```
 解析：
 
+此题考察类实例化初始化流程，所得结果如下，原因如上面 77 题所示：
+```
+BBQ
+FSB0 ......
+FSB1 a:1
+FSB2 a:2
+FSB3 c:1
+F func1 a:3, c:1
+CSB0 ......
+CSB1 a:1
+CSB2 a:2
+CSB3 c:1
+C func1 a:3, c:1
+FB0 ......
+FB4 a:4, b:2, c:1
+F CONSTTRUCTOR a:5, b:3, c:1, d:1
+CB0 ......
+CB4 a:4, b:2, c:1
+C CONSTTRUCTOR a:5, b:3, c:1, d:1
+C func1 a:6, b:4, c:1, d:1
+```
 
+### **79.下面程序的运行结果是什么，为什么？**
+```java
+class SingleTon {
+    private static SingleTon singleTon = new SingleTon();
+    public static int count1;
+    public static int count2 = 0;
+
+    private SingleTon() {
+        count1++;
+        count2++;
+    }
+
+    public static SingleTon getInstance() {
+        return singleTon;
+    }
+}
+
+public class Demo {
+    public static void main(String[] args) {
+        SingleTon singleTon = SingleTon.getInstance();
+        System.out.println("count1=" + singleTon.count1);
+        System.out.println("count2=" + singleTon.count2);
+    }
+}
+```
+
+解析：
+```
+count1=1
+count2=0
+```
+原因为`SingleTon singleTon = SingleTon.getInstance();`调用了类的静态方法，所以触发类的初始化，类加载的时候在准备过程中为类的静态变量分配内存并初始化默认值`singleton=null，count1=0，count2=0`，类初始化时为类的静态变量赋值和执行静态代码快，singleton 赋值为 new SingleTon() 调用类的构造方法，调用类的构造方法后 count=1 且 count2=1，继续为 count1 与 count2 赋值，此时 count1 没有赋值操作，所有 count1 为 1，但是 count2 执行赋值操作就变为 0。
+
+### **80.下面程序的运行结果是什么，为什么？**
+```java
+class SuperClass {
+    static {
+        System.out.println("superclass init");
+    }
+    public static int value = 123;
+}
+
+class SubClass extends SuperClass {
+    static {
+        System.out.println("subclass init");
+    }
+}
+
+class ConstClass {
+    static {
+        System.out.println("constclass init");
+    }
+    public static final String HELLOWORLD = "hello world";
+}
+
+public class Demo {
+    public static void main(String[] args) {
+        System.out.println(SubClass.value); //1
+        SubClass[] array = new SubClass[10];    //2
+        System.out.println(ConstClass.HELLOWORLD);  //3
+        new SubClass();     //4
+    }
+}
+```
+
+解析：
+```
+superclass init
+123
+hello world
+subclass init
+```
+因为被动引用不会触发类的初始化，主动引用才会触发，上面 1 为子类调用父类的静态变量，子类不会被初始化，只有父类被初始化，对于静态字段只有直接定义这个字段的类才会被初始化；2 为通过数组定义来引用类，所以不会触发类的初始化；3 为访问类的常量，所以不会初始化类；4 就是主动引用了，自然会初始化了。
+
+### **81.下面程序的输出结果是什么？**
+```java
+class Singleton {
+    public static class Inner {
+        public static Singleton testInstance = new Singleton(3);
+        static {
+            System.out.println("SI static.");
+        }
+    }
+
+    public static Singleton getInstance() {
+        return Inner.testInstance;
+    }
+
+    public Singleton(int i) {
+        System.out.println("construct i="+i);
+    }
+
+    static {
+        System.out.println("S static.");
+    }
+
+    public static Singleton testOut = new Singleton(1);
+}
+
+public class Demo {
+    public static void main(String args[]){
+        Singleton t = new Singleton(2);
+        Singleton.getInstance();
+    }
+}
+```
+
+解析：
+```
+S static.
+construct i=1
+construct i=2
+construct i=3
+SI static.
+```
 
 
 http://www.importnew.com/1796.html
@@ -2291,9 +2557,7 @@ http://www.cnblogs.com/tengpan-cn/p/5869099.html
 https://www.2cto.com/kf/201608/535046.html
 http://blog.csdn.net/qq_16216221/article/details/71600535
 
-
-
-### **79.ClassLoader 与 Class.forName区别？**
+### **82.ClassLoader 与 Class.forName区别？**
 
 解析：
 
@@ -2319,7 +2583,7 @@ http://blog.csdn.net/u010590685/article/details/47066865
 
 
 
-反射的原理（method\invok）＼finalize原理＼垃圾回收、ASM、AOP
+反射的原理（method\invok）＼finalize原理＼垃圾回收、ASM、AOP，微信题
 
 ### **.谈谈 Java 的 NIO 与内存映射，，**
 
