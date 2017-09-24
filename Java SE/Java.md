@@ -445,6 +445,8 @@ java 内部类分为几种，各种自己有哪些特性？
 
 成员内部类没有用 static 修饰且定义在在外部类类体中。
 
+更多参见[java之内部类----非静态内部类、静态内部类、局部内部类、匿名内部类](http://www.cnblogs.com/Gaojiecai/p/4041663.html)一文。
+
 ### **14.下面程序的运行结果是什么？**
 ```java
 public enum Size {
@@ -2584,7 +2586,40 @@ null
 
 在初始化 Sub 对象前首先在堆区开辟内存并将子类中的 baseName 和父类中的 baseName（已被隐藏）均赋为 null，接下来执行对象的初始化过程，由于 Sub 类的构造函数没有写，初始化首先调用 Base 类的，故 baseName = “base” 是父类的 baseName 赋值，接着父类构造函数里调用 callName() 实质是多态调用子类 Sub 的 callName() 方法，而此时父类构造还未执行完毕，暂时轮不到子类一般属性初始化和构造调用，所以子类的 baseName 变量还未赋值，所以还是 null。
 
-### **83.ClassLoader 与 Class.forName区别？**
+### **83.简单说说 java 的 Class.forName 和 ClassLoader.loadClass 方法的区别？**
+
+解析：
+
+一个 Java 类加载到 JVM 中会经过三个步骤，装载（查找和导入类或接口的二进制数据）、链接（校验：检查导入类或接口的二进制数据的正确性；准备：给类的静态变量分配并初始化存储空间；解析：将符号引用转成直接引用；）、初始化（激活类的静态变量的初始化 Java 代码和静态 Java 代码块）。
+
+对于 Class.forName 方法来说：
+```java
+//Class.forName(className) 方法内部实际调用的方法是 Class.forName(className, true, classloader);
+public static Class<?> forName(String name, boolean initialize, ClassLoader loader)
+```
+三个参数的含义分别为：
+```
+name：要加载 Class 的名字
+initialize：是否要初始化
+loader：指定的 classLoader
+```
+对于 ClassLoader.loadClass 方法来说：
+```java
+//ClassLoader.loadClass(className) 方法内部实际调用的方法是 ClassLoader.loadClass(className, false);
+protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException
+```
+两个参数的含义分别为：
+```
+name：class 的名字
+resolve：是否要进行链接
+```
+所以通过传入的参数可以知道 Class.forName 方法执行之后已经对被加载类的静态变量分配完了存储空间，而 ClassLoader.loadClass 方法并没有一定执行完链接这一步；当想动态加载一个类且这个类又存在静态代码块或者静态变量而你在加载时就想同时初始化这些静态代码块则应偏向于使用 Class.forName 方法。
+
+### **84.什么是 Java 的注解？**
+
+解析：
+
+
 
 http://www.importnew.com/1796.html
 
@@ -2612,7 +2647,7 @@ http://blog.csdn.net/u010590685/article/details/47066865
 
 
 
-
+http://zangweiren.iteye.com/category/34977
  http://www.cnblogs.com/ggmfengyangdi/p/5761632.html
 
  一、String,StringBuffer, StringBuilder 的区别是什么？String为什么是不可变的？
