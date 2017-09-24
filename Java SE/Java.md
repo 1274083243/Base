@@ -2549,6 +2549,42 @@ construct i=3
 SI static.
 ```
 
+### **82.下面程序的执行结果是什么？**
+```java
+public class Demo {
+    private String baseName = "base";
+
+    public Demo() {
+        callName();
+    }
+
+    public void callName() {
+        System.out.println(baseName);
+    }
+
+    static class Sub extends Demo {
+        private String baseName = "sub";
+
+        public void callName() {
+            System.out.println(baseName) ;
+        }
+    }
+
+    public static void main(String[] args) {
+        Demo demo = new Sub();
+    }
+}
+```
+
+解析：
+```
+null
+```
+当虚拟机创建一个新的实例时，都需要在堆中为保存对象的实例分配内存，所有在对象的类中和它的超类中声明的变量（包括隐藏的实例变量）都要分配内存，一旦虚拟机为新的对象准备好堆内存，它立即把实例变量初始化为默认的初始值，一旦虚拟机完成了为新的对象分配内存和为实例变量初始化为默赋予正确认的初始值后，接下来就会调用对象的实例初始化方法。
+
+在初始化 Sub 对象前首先在堆区开辟内存并将子类中的 baseName 和父类中的 baseName（已被隐藏）均赋为 null，接下来执行对象的初始化过程，由于 Sub 类的构造函数没有写，初始化首先调用 Base 类的，故 baseName = “base” 是父类的 baseName 赋值，接着父类构造函数里调用 callName() 实质是多态调用子类 Sub 的 callName() 方法，而此时父类构造还未执行完毕，暂时轮不到子类一般属性初始化和构造调用，所以子类的 baseName 变量还未赋值，所以还是 null。
+
+### **83.ClassLoader 与 Class.forName区别？**
 
 http://www.importnew.com/1796.html
 
@@ -2556,8 +2592,6 @@ http://www.cnblogs.com/javaee6/p/3714716.html
 http://www.cnblogs.com/tengpan-cn/p/5869099.html
 https://www.2cto.com/kf/201608/535046.html
 http://blog.csdn.net/qq_16216221/article/details/71600535
-
-### **82.ClassLoader 与 Class.forName区别？**
 
 解析：
 
@@ -2579,7 +2613,16 @@ http://blog.csdn.net/u010590685/article/details/47066865
 
 
 
- 
+ http://www.cnblogs.com/ggmfengyangdi/p/5761632.html
+
+ 一、String,StringBuffer, StringBuilder 的区别是什么？String为什么是不可变的？
+答：   1、String是字符串常量，StringBuffer和StringBuilder都是字符串变量。后两者的字符内容可变，而前者创建后内容不可变。
+
+2、String不可变是因为在JDK中String类被声明为一个final类。
+
+3、StringBuffer是线程安全的，而StringBuilder是非线程安全的。
+
+ps：线程安全会带来额外的系统开销，所以StringBuilder的效率比StringBuffer高。如果对系统中的线程是否安全很掌握，可用StringBuffer，在线程不安全处加上关键字Synchronize。
 
 
 
