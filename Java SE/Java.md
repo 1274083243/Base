@@ -2629,7 +2629,82 @@ Java 注解可以分为内置注解和自定义注解，常见的内置注解有
 ```
 这种风格降低了编程的难度，为应用程序员提供了更加高级的语言，使我们可以站在更高层次角度思考解决问题而不用过多的关心底层实现，所以注解一般适合框架开发，用来指定规则给使用框架的人创建便利。
 
-### **85.Java 如何创建自定义注解？**
+### **85.Java 如何创建自定义注解？注解是如何工作的？**
+
+解析：
+
+下面是一个自定义注解`@Todo`：
+```java
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+@interface Todo {
+    public enum Priority {LOW, MEDIUM, HIGH}
+    
+    public enum Status {STARTED, NOT_STARTED}
+
+    String author() default "Yash";
+    Priority priority() default Priority.LOW;
+    Status status() default Status.NOT_STARTED;
+}
+```
+下面的例子演示了如何使用上面的自定义注解：
+```java
+@Todo(priority = Todo.Priority.MEDIUM, author = "Yashwant", status = Todo.Status.STARTED)
+public void incompleteMethod1() {
+//Some business logic is written
+//But it’s not complete yet
+}
+```
+接着我们解释下上面这个自定义注解，Java 在 java.lang.annotation 包下提供了几种元注解用来注解其他的注解：
+```java
+//注解是否将包含在 JavaDoc 中，表示是否将注解信息添加在 java 文档中。
+@Documented
+
+//什么时候使用该注解，定义该注解的生命周期。
+//取值 RetentionPolicy.SOURCE 表示在编译阶段丢弃，这些注解在编译结束之后就不再有任何意义，所以它们不会写入字节码，@Override、@SuppressWarnings 都属于这类注解。
+//取值 RetentionPolicy.CLASS 在类加载的时候丢弃，在字节码文件的处理中有用，注解默认使用这种方式。
+//取值 RetentionPolicy.RUNTIME 表示始终不会丢弃，运行期也保留该注解，因此可以使用反射机制读取该注解的信息，我们自定义的注解通常使用这种方式。
+@Retention
+
+//表示该注解用于什么地方，如果不明确指出，该注解可以放在任何地方，可以同时指定多个地方。
+//取值 ElementType.TYPE 用于描述类、接口或 enum 声明。
+//取值 ElementType.FIELD 用于描述实例变量。
+//取值 ElementType.METHOD 用于描述方法。
+//取值 ElementType.PARAMETER 用于描述参数。
+//取值 ElementType.CONSTRUCTOR 用于描述构造方法。
+//取值 ElementType.LOCAL_VARIABLE 用于描述本地局部变量。
+//取值 ElementType.ANNOTATION_TYPE 用于另一个注释。
+//取值 ElementType.PACKAGE 用于记录 java 文件的 package 信息。
+@Target
+
+//是否允许子类继承该注解，如果父类使用了注解子类默认是不继承的。
+@Inherited
+```
+注解的可用的类型包括以所有基本类型、String、Class、enum、Annotation 及以上类型的数组形式，元素不能有不确定的值（即要么有默认值，要么在使用注解的时候提供元素的值），而且元素不能使用 null 作为默认值，注解在只有一个元素且该元素的名称是 value 的情况下在使用注解的时候可以省略 “value=” 直接写值即可，如下：
+```java
+@interface Author {
+    String value();
+}
+
+@Author("Yashwant")
+public void someMethod() {
+}
+```
+所以上面就是自定义注解并将其应用在业务逻辑上的流程，接着我们需要使用反射机制写一个用户程序调用我们的注解，如下代码使用了上面的注解：
+```java
+Class businessLogicClass = BusinessLogic.class;
+for(Method method : businessLogicClass.getMethods()) {
+    Todo todoAnnotation = (Todo)method.getAnnotation(Todo.class);
+    if(todoAnnotation != null) {
+        System.out.println(" Method Name : " + method.getName());
+        System.out.println(" Author : " + todoAnnotation.author());
+        System.out.println(" Priority : " + todoAnnotation.priority());
+        System.out.println(" Status : " + todoAnnotation.status());
+    }
+}
+所以说注解的工作原理实质就是通过注解解析器（反射获取注解信息）进行解析处理。
+
+### **86.？**
 
 http://www.importnew.com/1796.html
 
@@ -2638,11 +2713,6 @@ http://www.cnblogs.com/tengpan-cn/p/5869099.html
 https://www.2cto.com/kf/201608/535046.html
 http://blog.csdn.net/qq_16216221/article/details/71600535
 
-解析：
-
-如何显式的加载类
-
-Java提供了显式加载类的API：Class.forName(classname)和Class.forName(classname, initialized, classloader)。就像上面的例子中，你可以指定类加载器的名称以及要加载的类的名称。类的加载是通过调用java.lang.ClassLoader的loadClass()方法，而loadClass()方法则调用了findClass()方法来定位相应类的字节码。在这个例子中Extension类加载器使用了java.net.URLClassLoader，它从JAR和目录中进行查找类文件，所有以”/”结尾的查找路径被认为是目录。如果findClass()没有找到那么它会抛出java.lang.ClassNotFoundException异常，而如果找到的话则会调用defineClass()将字节码转化成类实例，然后返回。
 
 ### **80.？**
 
