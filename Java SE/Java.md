@@ -2702,7 +2702,7 @@ for(Method method : businessLogicClass.getMethods()) {
         System.out.println(" Status : " + todoAnnotation.status());
     }
 }
-所以说注解的工作原理实质就是通过注解解析器（反射获取注解信息）进行解析处理。
+所以说注解的工作原理实质对于 RetentionPolicy.CLASS 类型是通过注解处理器（AbstractProcessor等），RetentionPolicy.RUNTIME 类型通过反射获取注解信息进行解析处理。
 
 ### **86.？**
 
@@ -2740,8 +2740,8 @@ http://zangweiren.iteye.com/category/34977
 ps：线程安全会带来额外的系统开销，所以StringBuilder的效率比StringBuffer高。如果对系统中的线程是否安全很掌握，可用StringBuffer，在线程不安全处加上关键字Synchronize。
 
 
-
-反射的原理（method\invok）＼finalize原理＼垃圾回收、ASM、AOP，微信题
+http://www.importnew.com/15246.html  java注解处理器
+反射的原理（method\invok）＼finalize原理＼垃圾回收、ASM、AOP（动态代理为基础），微信题，java SPI
 
 ### **.谈谈 Java 的 NIO 与内存映射，，**
 
