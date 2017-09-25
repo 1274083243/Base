@@ -173,7 +173,8 @@ for (int i=0; i<100; i++) {
 
 6-4 的　aobj = null　不会让　aobj 对应的实例回收，因为这仅仅是释放了对象引用，而对象实质还有被静态的　v 所持有。
 
-### **7.以下程序运行的结果是神马？**
+### **7.分别回答以下问题？**
+7-1 下面程序的运行结果是什么？
 ```java
 String s1 = "abc";
 StringBuffer s2 = new StringBuffer(s1);
@@ -183,15 +184,42 @@ StringBuffer s3 = new StringBuffer("abc");
 System.out.println(s3.equals("abc"));
 System.out.println(s3.toString().equals("abc"));
 ```
-**结果：**
+**解析：**
 
 第一个打印为　false。
 第二个打印为　false。
 第三个打印为　true。
 
-**原因:**
+因为第一个考 String 的 equals 方式，equals 方法进行了 instance of 判断。第二个 s3.equals　为　Object　类型，所以实现为　＝＝　判断，故　false。第三个就是常规套路了。
 
-第一个考 String 的 equals 方式，equals 方法进行了 instance of 判断。第二个 s3.equals　为　Object　类型，所以实现为　＝＝　判断，故　false。第三个就是常规套路了。
+7-2 如何实现字符串的反转及替换？ 
+
+**解析：**
+
+方法很多，可以自己写实现也可以使用 String 或 StringBuffer、StringBuilder 中的方法，不过有一道很常见的面试题是用递归实现字符串反转，代码如下所示：
+```java
+    public static String reverse(String originStr) {
+        if(originStr == null || originStr.length() <= 1) 
+            return originStr;
+        return reverse(originStr.substring(1)) + originStr.charAt(0);
+    }
+```
+
+7-3 怎样将 GB2312 编码的字符串转换为 ISO-8859-1 编码的字符串？ 
+
+**解析：**
+```java
+String s1 = "你好";
+String s2 = new String(s1.getBytes("GB2312"), "ISO-8859-1");
+```
+
+7-4 String、StringBuffer、StringBuilder 的区别是什么？String 为什么是不可变的？
+
+**解析：**
+
+String 是字符串常量，StringBuffer 和 StringBuilder 都是字符串变量，后两者的字符内容可变，而前者创建后内容不可变；StringBuffer 是线程安全的，而 StringBuilder 是非线程安全的，线程安全会带来额外的系统开销，所以 StringBuilder 的效率比 StringBuffer 高。
+
+String 不可变是因为在 JDK 中 String 类被声明为一个 final 类，只有当字符串是不可变时字符串池才有可能实现，字符串池的实现可以在运行时节约很多 heap 空间，因为不同的字符串变量都指向池中的同一个字符串；如果字符串是可变的则会引起很严重的安全问题，譬如数据库的用户名密码都是以字符串的形式传入来获得数据库的连接，或者在 socket 编程中主机名和端口都是以字符串的形式传入，因为字符串是不可变的，所以它的值是不可改变的，否则黑客们可以钻到空子改变字符串指向的对象的值造成安全漏洞；因为字符串是不可变的，所以是多线程安全的，同一个字符串实例可以被多个线程共享，这样便不用因为线程安全问题而使用同步，字符串自己便是线程安全的；因为字符串是不可变的所以在它创建的时候 hashcode 就被缓存了，不需要重新计算，这就使得字符串很适合作为 Map 的键，字符串的处理速度要快过其它的键对象，这就是 HashMap 中的键往往都使用字符串的原因。
 
 ### **8.下面的题目结果是什么?**
 ```java
@@ -2730,18 +2758,11 @@ http://blog.csdn.net/u010590685/article/details/47066865
 http://zangweiren.iteye.com/category/34977
  http://www.cnblogs.com/ggmfengyangdi/p/5761632.html
 
- 一、String,StringBuffer, StringBuilder 的区别是什么？String为什么是不可变的？
-答：   1、String是字符串常量，StringBuffer和StringBuilder都是字符串变量。后两者的字符内容可变，而前者创建后内容不可变。
 
-2、String不可变是因为在JDK中String类被声明为一个final类。
-
-3、StringBuffer是线程安全的，而StringBuilder是非线程安全的。
-
-ps：线程安全会带来额外的系统开销，所以StringBuilder的效率比StringBuffer高。如果对系统中的线程是否安全很掌握，可用StringBuffer，在线程不安全处加上关键字Synchronize。
 
 
 http://www.importnew.com/15246.html  java注解处理器
-反射的原理（method\invok）＼finalize原理＼垃圾回收、ASM、AOP（动态代理为基础），微信题，java SPI
+＼finalize原理＼垃圾回收、ASM、AOP（动态代理为基础），微信题，java SPI
 
 ### **.谈谈 Java 的 NIO 与内存映射，，**
 
