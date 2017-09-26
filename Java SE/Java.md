@@ -2231,6 +2231,8 @@ java.lang.Integer
 
 感兴趣的可以去看下[Gson 官方源码解析的代码](https://github.com/google/gson/blob/2b15334a4981d4e0bd4f2c2d34b8978a4167f36a/gson/src/main/java/com/google/gson/reflect/TypeToken.java#L77)。
 
+额外知识点补充[《Java中的Type详解》](http://loveshisong.cn/%E7%BC%96%E7%A8%8B%E6%8A%80%E6%9C%AF/2016-02-16-Type%E8%AF%A6%E8%A7%A3.html)。
+
 ### **74.java 反射的基本原理是什么？**
 
 解析：
